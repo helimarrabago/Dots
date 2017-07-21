@@ -13,14 +13,20 @@ import android.widget.TextView;
 import com.scanlibrary.ScanConstants;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Helimar Rabago on 12 Jul 2017.
@@ -28,6 +34,7 @@ import java.io.IOException;
 
 public class PreprocessingActivity extends AppCompatActivity {
     private ImageView image;
+    //private ImageView image2;
     private TextView caption;
 
     private Bitmap bitmap;
@@ -39,6 +46,7 @@ public class PreprocessingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_preprocessing);
 
         image = (ImageView) findViewById(R.id.image);
+        //image2 = (ImageView) findViewById(R.id.image2);
         caption = (TextView) findViewById(R.id.caption);
 
         Bundle extras = getIntent().getExtras();
@@ -47,7 +55,10 @@ public class PreprocessingActivity extends AppCompatActivity {
             Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                //Bitmap original = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 getContentResolver().delete(uri, null, null);
+
+                //image2.setImageBitmap(original);
 
                 // Create mat object with the same dimension as bitmap
                 // CV_8U - 8-bit unsigned char/int (0-255)
@@ -57,7 +68,8 @@ public class PreprocessingActivity extends AppCompatActivity {
 
                 grayToBW(mat);
                 removeNoise(mat);
-                //computeSkew(mat);
+                //closeGaps(mat);
+                computeSkew(mat);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -70,12 +82,6 @@ public class PreprocessingActivity extends AppCompatActivity {
 
         // Convert mat from RGB color space to grayscale
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-
-        // Convert the transformed mat object back to bitmap
-        Utils.matToBitmap(mat, bitmap);
-
-        // Display bitmap (grayscale)
-        image.setImageBitmap(bitmap);
 
         caption.setText(getString(R.string.threshold));
 
@@ -90,21 +96,61 @@ public class PreprocessingActivity extends AppCompatActivity {
 
         // Convert the transformed mat object back to bitmap
         Utils.matToBitmap(mat, bitmap);
-
         // Display bitmap
         image.setImageBitmap(bitmap);
     }
 
     private void removeNoise(Mat mat) {
         Imgproc.erode(mat, mat, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3)));
-        Imgproc.dilate(mat, mat, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3)));
+        Imgproc.dilate(mat, mat, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8, 8)));
 
         Utils.matToBitmap(mat, bitmap);
 
         image.setImageBitmap(bitmap);
     }
 
-    private void computeSkew(Mat mat) {
+    private void closeGaps(Mat mat) {
+        Imgproc.morphologyEx(mat, mat, Imgproc.MORPH_CLOSE,
+                Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(8, 8)));
+
+        Utils.matToBitmap(mat, bitmap);
+        image.setImageBitmap(bitmap);
+    }
+
+    public void computeSkew(Mat mat) {
+        Mat img = mat;
+
+        Imgproc.erode(img, img, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(10, 10)));
+
+        // Find all white pixels
+        Mat wLocMat = Mat.zeros(img.size(), img.type());
+        Core.findNonZero(img, wLocMat);
+
+        // Create an empty Mat and pass it to the function
+        MatOfPoint matOfPoint = new MatOfPoint(wLocMat);
+
+        //Translate MatOfPoint to MatOfPoint2f in order to user at a next step
+        MatOfPoint2f mat2f = new MatOfPoint2f();
+        matOfPoint.convertTo(mat2f, CvType.CV_32FC2);
+
+        //Get rotated rect of white pixels
+        RotatedRect rotatedRect = Imgproc.minAreaRect(mat2f);
+
+        Point[] vertices = new Point[4];
+        rotatedRect.points(vertices);
+        List<MatOfPoint> boxContours = new ArrayList<>();
+        boxContours.add(new MatOfPoint(vertices));
+        Log.i("Info", String.valueOf(vertices[0]) + " " +
+                String.valueOf(vertices[1]) + " " +
+                String.valueOf(vertices[2]) + " " +
+                String.valueOf(vertices[3]));
+        Imgproc.drawContours(mat, boxContours, 0, new Scalar(255, 0, 0), -1);
+
+        Utils.matToBitmap(img, bitmap);
+        image.setImageBitmap(bitmap);
+    }
+
+    /*private void computeSkew(Mat mat) {
         caption.setText(getString(R.string.skew));
 
         Mat lines = new Mat();
@@ -127,5 +173,5 @@ public class PreprocessingActivity extends AppCompatActivity {
         Utils.matToBitmap(mat, bitmap);
 
         image.setImageBitmap(bitmap);
-    }
+    }*/
 }
