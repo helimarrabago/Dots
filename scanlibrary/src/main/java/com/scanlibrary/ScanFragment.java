@@ -168,6 +168,18 @@ public class ScanFragment extends Fragment {
         polygonView.setLayoutParams(layoutParams);
     }
 
+    /*private Map<Integer, PointF> getQuarterPoints(Bitmap tempBitmap) {
+        Map<Integer, PointF> outlinePoints = new HashMap<>();
+        outlinePoints.put(0, new PointF(tempBitmap.getWidth() / 4, tempBitmap.getHeight() / 4));
+        outlinePoints.put(1, new PointF(tempBitmap.getWidth() - (tempBitmap.getWidth() / 4),
+                tempBitmap.getHeight() / 4));
+        outlinePoints.put(2, new PointF(tempBitmap.getWidth() / 4,
+                tempBitmap.getHeight() - (tempBitmap.getHeight() / 4)));
+        outlinePoints.put(3, new PointF(tempBitmap.getWidth() - (tempBitmap.getWidth() / 4),
+                tempBitmap.getHeight() - (tempBitmap.getHeight() / 4)));
+        return outlinePoints;
+    }*/
+
     // Commented out since algorithm does not work well; resorted to just initializing the crop
     // boundary to the border of the image (getOutlinePoints)
     /*private Map<Integer, PointF> getEdgePoints(Bitmap tempBitmap) {

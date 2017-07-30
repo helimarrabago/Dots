@@ -260,7 +260,7 @@ public class PreprocessingActivity extends AppCompatActivity {
                     //Imgproc.line(mat, new Point(0, centroids.get(i).y),
                     //new Point(mat.width(), centroids.get(i).y), new Scalar(255, 0, 0));
 
-                    dist.add(avg);
+                    dist.add(sum);
                 }
             }
         }
@@ -272,8 +272,10 @@ public class PreprocessingActivity extends AppCompatActivity {
         int sum = 0;
         int avg = 0;
 
-        for (int i = 1; i < yCoords.size(); i++)
+        for (int i = 1; i < yCoords.size(); i++) {
+            System.out.println(yCoords.get(i));
             sum += yCoords.get(i) - yCoords.get(i - 1);
+        }
         avg = sum / (yCoords.size() - 1);
 
         System.out.println(avg);
@@ -284,17 +286,17 @@ public class PreprocessingActivity extends AppCompatActivity {
         while (i < yCoords.size()) {
             System.out.println(yCoords.get(i));
 
-            if (curr - prev > avg - 10) {
+            if (curr - prev > avg - 15) {
                 System.out.println("In " + curr + " - " + prev + " = " +
                         (curr - prev));
                 if (i == 1) {
-                    Imgproc.line(mat, new Point(prev, 0),
-                            new Point(prev, mat.height()), new Scalar(255, 0, 0));
-                    Imgproc.line(mat, new Point(curr, 0),
-                            new Point(curr, mat.height()), new Scalar(255, 0, 0));
+                    Imgproc.line(mat, new Point(0, prev),
+                            new Point(mat.width(), prev), new Scalar(255, 0, 0));
+                    Imgproc.line(mat, new Point(0, curr),
+                            new Point(mat.width(), curr), new Scalar(255, 0, 0));
                 } else
-                    Imgproc.line(mat, new Point(curr, 0),
-                            new Point(curr, mat.height()), new Scalar(255, 0, 0));
+                    Imgproc.line(mat, new Point(0, curr),
+                            new Point(mat.width(), curr), new Scalar(255, 0, 0));
 
                 if (i == yCoords.size() - 1) break;
 
@@ -310,11 +312,11 @@ public class PreprocessingActivity extends AppCompatActivity {
                 int j = 0;
                 for (j = i + 1; j < yCoords.size(); j++) {
                     System.out.println(yCoords.get(j));
-                    if (yCoords.get(j) - prev > avg - 10) {
+                    if (yCoords.get(j) - prev > avg - 15) {
                         System.out.println("In" + yCoords.get(j) + " - " + prev + " = " +
                                 (yCoords.get(j) - prev));
-                        Imgproc.line(mat, new Point(yCoords.get(j), 0),
-                                new Point(yCoords.get(j), mat.height()), new Scalar(255, 0, 0));
+                        Imgproc.line(mat, new Point(0, yCoords.get(j)),
+                                new Point(mat.width(), yCoords.get(j)), new Scalar(255, 0, 0));
 
                         break;
                     }
@@ -402,17 +404,17 @@ public class PreprocessingActivity extends AppCompatActivity {
             sum += xCoords.get(i) - xCoords.get(i - 1);
         avg = sum / (xCoords.size() - 1);
 
-        System.out.println(avg);
+        //System.out.println(avg);
 
         int i = 1;
         int prev = xCoords.get(i - 1);
         int curr = xCoords.get(i);
         while (i < xCoords.size()) {
-            System.out.println(xCoords.get(i));
+            //System.out.println(xCoords.get(i));
 
             if (curr - prev > avg - 10) {
-                System.out.println("In " + curr + " - " + prev + " = " +
-                        (curr - prev));
+                //System.out.println("In " + curr + " - " + prev + " = " +
+                        //(curr - prev));
                 if (i == 1) {
                     Imgproc.line(mat, new Point(prev, 0),
                             new Point(prev, mat.height()), new Scalar(255, 0, 0));
@@ -430,15 +432,15 @@ public class PreprocessingActivity extends AppCompatActivity {
                 i++;
             }
             else {
-                System.out.println("Out " + curr + " - " + prev + " = " +
-                        (curr - prev));
+                //System.out.println("Out " + curr + " - " + prev + " = " +
+                        //(curr - prev));
 
                 int j = 0;
                 for (j = i + 1; j < xCoords.size(); j++) {
-                    System.out.println(xCoords.get(j));
+                    //System.out.println(xCoords.get(j));
                     if (xCoords.get(j) - prev > avg - 10) {
-                        System.out.println("In" + xCoords.get(j) + " - " + prev + " = " +
-                                (xCoords.get(j) - prev));
+                        //System.out.println("In" + xCoords.get(j) + " - " + prev + " = " +
+                                //(xCoords.get(j) - prev));
                         Imgproc.line(mat, new Point(xCoords.get(j), 0),
                                 new Point(xCoords.get(j), mat.height()), new Scalar(255, 0, 0));
 
