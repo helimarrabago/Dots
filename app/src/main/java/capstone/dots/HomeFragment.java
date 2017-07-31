@@ -18,9 +18,9 @@ import com.scanlibrary.ScanConstants;
  */
 
 public class HomeFragment extends Fragment {
-    View mView;
-    ImageButton camera_button;
-    ImageButton gallery_button;
+    private View mView;
+    private ImageButton camera_button;
+    private ImageButton gallery_button;
 
     private static final int REQUEST_CODE = 99;
 
@@ -57,7 +57,7 @@ public class HomeFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Intent intent = new Intent(getActivity(), PreprocessingActivity.class);
+            Intent intent = new Intent(getActivity(), ProcessingActivity.class);
             intent.putExtra("Data", data);
             startActivity(intent);
         }

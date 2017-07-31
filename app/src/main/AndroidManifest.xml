@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PreprocessingActivity"
+            android:name=".ProcessingActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 </manifest>
