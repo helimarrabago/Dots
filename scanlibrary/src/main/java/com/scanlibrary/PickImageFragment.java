@@ -111,7 +111,6 @@ public class PickImageFragment extends Fragment {
     }*/
 
     public void openMediaContent() {
-        Log.i("Info", "openMediaContent");
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
@@ -122,7 +121,6 @@ public class PickImageFragment extends Fragment {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         File file = createImageFile();
         boolean isDirectoryCreated = file.getParentFile().mkdirs();
-        Log.i("Info", "openCamera: isDirectoryCreated: " + isDirectoryCreated);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Uri tempFileUri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
                     "com.scanlibrary.provider", // As defined in Manifest
@@ -147,7 +145,6 @@ public class PickImageFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("", "onActivityResult" + resultCode);
         Bitmap bitmap = null;
         if (resultCode == Activity.RESULT_OK) {
             try {

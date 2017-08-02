@@ -59,15 +59,18 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
     }
 
     @Override
-    public void translateImage(ArrayList<Integer> xCoords, ArrayList<Integer> yCoords) {
+    public void translateImage(Mat mat, ArrayList<Integer> xCoords, ArrayList<Integer> yCoords) {
         TranslationFragment fragment = new TranslationFragment();
         Bundle bundle = new Bundle();
+        long addr = mat.getNativeObjAddr();
+        bundle.putLong("mat", addr);
         bundle.putIntegerArrayList("xCoords", xCoords);
         bundle.putIntegerArrayList("yCoords", yCoords);
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(capstone.dots.R.id.content, fragment);
+        fragmentTransaction.addToBackStack(TranslationFragment.class.toString());
         fragmentTransaction.commit();
     }
 }

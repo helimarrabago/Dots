@@ -3,21 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black">
-    <TextView
-        android:id="@+id/caption"
+    <View
+        android:id="@+id/blockTop"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/colorPrimary"
-        android:fontFamily="sans-serif-light"
-        android:textSize="16sp"
-        android:paddingLeft="20dp"
-        android:gravity="center_vertical"
-        android:textColor="@android:color/white"/>
+        android:background="@color/colorPrimary" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/caption"
-        android:layout_above="@+id/block"
+        android:layout_below="@id/blockTop"
+        android:layout_above="@+id/blockBottom"
         android:orientation="horizontal">
         <FrameLayout
             android:layout_width="0dp"
@@ -31,37 +26,34 @@
                 android:layout_gravity="center"
                 android:layout_margin="@dimen/scanPadding">
                 <ImageView
-                    android:id="@+id/image"
+                    android:id="@+id/outputImage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:adjustViewBounds="true"/>
             </FrameLayout>
         </FrameLayout>
-        <!--<FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:layout_margin="@dimen/scanPadding">
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:layout_margin="@dimen/scanPadding">
-                <ImageView
-                    android:id="@+id/image2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:adjustViewBounds="true"/>
-            </FrameLayout>
-        </FrameLayout>-->
     </LinearLayout>
-    <View
-        android:id="@+id/block"
+    <LinearLayout
+        android:id="@+id/blockBottom"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/cancelButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/cancel_icon"/>
+        <ImageButton
+            android:id="@+id/proceedButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/proceed_icon"/>
+    </LinearLayout>
 </RelativeLayout>

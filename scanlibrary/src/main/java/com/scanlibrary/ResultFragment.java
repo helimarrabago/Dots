@@ -44,6 +44,7 @@ public class ResultFragment extends Fragment {
 
     private void init() {
         Bitmap bitmap = getBitmap();
+
         done();
         /*scannedImageView = (ImageView) view.findViewById(R.id.scannedImage);
         originalButton = (Button) view.findViewById(R.id.original);
@@ -78,28 +79,17 @@ public class ResultFragment extends Fragment {
     }
 
     private void done() {
-        showProgressDialog(getResources().getString(R.string.loading));
-        AsyncTask.execute(new Runnable() {
+        Intent data = new Intent();
+        Bitmap bitmap = original;
+        Uri uri = Utils.getUri(getActivity(), bitmap);
+        data.putExtra(ScanConstants.SCANNED_RESULT, uri);
+        getActivity().setResult(Activity.RESULT_OK, data);
+        original.recycle();
+        System.gc();
+        getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Intent data = new Intent();
-                    Bitmap bitmap = original;
-                    Uri uri = Utils.getUri(getActivity(), bitmap);
-                    data.putExtra(ScanConstants.SCANNED_RESULT, uri);
-                    getActivity().setResult(Activity.RESULT_OK, data);
-                    original.recycle();
-                    System.gc();
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dismissDialog();
-                            getActivity().finish();
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                getActivity().finish();
             }
         });
     }
@@ -253,7 +243,7 @@ public class ResultFragment extends Fragment {
                 }
             });
         }
-    }*/
+    }
 
     protected synchronized void showProgressDialog(String message) {
         if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
@@ -268,5 +258,5 @@ public class ResultFragment extends Fragment {
 
     protected synchronized void dismissDialog() {
         progressDialogFragment.dismissAllowingStateLoss();
-    }
+    }*/
 }

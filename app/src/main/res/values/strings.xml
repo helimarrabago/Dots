@@ -1,6 +1,4 @@
 <resources>
     <string name="app_name">Dots</string>
-    <string name="grayscale">Grayscaling...</string>
-    <string name="threshold">Thresholding...</string>
-    <string name="skew">Correcting skew...</string>
+    <string name="processing">Processing image</string>
 </resources>
