@@ -1,17 +1,26 @@
 package capstone.dots;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.scanlibrary.ProgressDialogFragment;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by helimarrabago on 7/31/17.
@@ -20,6 +29,9 @@ import java.util.ArrayList;
 public class TranslationFragment extends Fragment {
     private View view;
     private EditText output;
+    private ProgressDialogFragment progressDialogFragment;
+
+    private ArrayList<HashMap<String, String>> files = new ArrayList<>(9);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,15 +46,55 @@ public class TranslationFragment extends Fragment {
 
         long addr = getArguments().getLong("mat", 0);
         Mat temp = new Mat(addr);
-        Mat mat = temp.clone();
-        ArrayList<Integer> xCoords = getArguments().getIntegerArrayList("xCoords");
-        ArrayList<Integer> yCoords = getArguments().getIntegerArrayList("yCoords");
+        final Mat mat = temp.clone();
+        final ArrayList<Integer> xCoords = getArguments().getIntegerArrayList("xCoords");
+        final ArrayList<Integer> yCoords = getArguments().getIntegerArrayList("yCoords");
 
-        ArrayList<String> binary = getBinary(mat, xCoords, yCoords);
-        ArrayList<Integer> decimal = convertToDecimal(binary);
+        showProgressDialog(getResources().getString(R.string.translate));
+        AsyncTask.execute(new Runnable() {
+              @Override
+              public void run() {
+                  loadFiles(files);
 
-        for (int i = 0; i < decimal.size(); i++)
-            output.append(decimal.get(i).toString() + " ");
+                  ArrayList<String> binary = getBinary(mat, xCoords, yCoords);
+                  final ArrayList<String> decimal = convertToDecimal(binary);
+
+                  getActivity().runOnUiThread(new Runnable() {
+                      @Override
+                      public void run() {
+                          for (int i = 0; i < decimal.size(); i++)
+                              output.append(decimal.get(i) + "\n");
+
+                          dismissDialog();
+                      }
+                  });
+              }
+          });
+    }
+
+    private void loadFiles(ArrayList<HashMap<String, String>> files) {
+        String[] paths = {"letters.txt", "numbers.txt", "onelower.txt",
+                "onepartword.txt", "onewholeword.txt", "punctuations.txt",
+                "shortform.txt", "twofinal.txt", "twoinitial.txt"};
+
+        for (int i = 0; i < paths.length; i++) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        getActivity().getAssets().open(paths[i])));
+
+                String line = "";
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(" ", 2);
+                    if (parts.length >= 2)
+                        files.get(i).put(parts[0], parts[1]);
+                }
+
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     // Get binary codes of each cell
@@ -130,16 +182,95 @@ public class TranslationFragment extends Fragment {
     }
 
     // Converts binary codes to decimal
-    private ArrayList<Integer> convertToDecimal(ArrayList<String> binary) {
-        ArrayList<Integer> decimal = new ArrayList<>();
+    private ArrayList<String> convertToDecimal(ArrayList<String> binary) {
+        ArrayList<String> decimal = new ArrayList<>();
 
-        for (int i = 0; i < binary.size(); i++) {
-            if (binary.get(i).equals("end"))
-                decimal.add(-1);
-            else
-                decimal.add(Integer.parseInt(binary.get(i), 2));
+        int i = 0;
+        while (i < binary.size()) {
+            if (binary.get(i).equals("end")) {
+                decimal.add("64");
+                i++;
+            }
+            else if (binary.get(i).equals("000000")) {
+                decimal.add("0");
+                i++;
+
+                while (binary.get(i).equals("000000"))
+                    i++;
+            }
+            else {
+                String word = "";
+                String dec = "";
+                int val = 0;
+
+                while (!binary.get(i).equals("end") && !binary.get(i).equals("000000")) {
+                    val = Integer.parseInt(binary.get(i), 2);
+                    if (val < 10)
+                        dec = "0" + String.valueOf(val);
+                    else
+                        dec = String.valueOf(val);
+
+                    word += dec;
+
+                    i++;
+                }
+
+                decimal.add(word);
+            }
         }
 
         return decimal;
+    }
+
+    private ArrayList<String> translateDecimal(ArrayList<String> decimal) {
+        ArrayList<String> translation = new ArrayList<>();
+
+        String str = "";
+        String sub = "";
+        String com = "";
+
+        for (int i = 0; i < decimal.size(); i++) {
+            str = decimal.get(i);
+
+            int j = 0;
+
+            if (!searchComposition(str.substring(0, 4)).equals("NON")) {
+                com = searchComposition(str.substring(0, 4));
+                j += str.substring(0, 4).length();
+            }
+
+            while (j < str.length()) {
+
+            }
+        }
+
+        return translation;
+    }
+
+    private String searchComposition(String substr) {
+        String composition = "NON";
+
+        if (substr.equals("15"))
+            composition = "NUM";
+        else if (substr.equals("05"))
+            composition = "ITA";
+        else if (substr.equals("0505"))
+            composition = "DBL_ITA";
+        else if (substr.equals("01"))
+            composition = "CAP";
+        else if (substr.equals("0101"))
+            composition = "DBL_CAP";
+
+        return composition;
+    }
+
+    protected void showProgressDialog(String message) {
+        progressDialogFragment = new ProgressDialogFragment(message);
+        FragmentManager fm = getFragmentManager();
+        progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
+    }
+
+    protected void dismissDialog() {
+        progressDialogFragment.dismissAllowingStateLoss();
     }
 }

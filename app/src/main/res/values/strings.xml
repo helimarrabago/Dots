@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Dots</string>
     <string name="processing">Processing image</string>
+    <string name="translate">Translating image</string>
 </resources>

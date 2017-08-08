@@ -13,10 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.scanlibrary.ProgressDialogFragment;
-import com.scanlibrary.ScanFragment;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -32,10 +30,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by helimarrabago on 7/31/17.
@@ -47,6 +43,7 @@ public class PreprocessingFragment extends Fragment {
     private ImageButton cancelButton;
     private ImageButton proceedButton;
     private Bitmap bitmap;
+    private Mat mat;
     private Mat mat_processed;
     private ArrayList<Integer> vLines;
     private ArrayList<Integer> hLines;
@@ -72,10 +69,12 @@ public class PreprocessingFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        if (bitmap != null && !bitmap.isRecycled()) {
-            bitmap.recycle();
-            bitmap = null;
-        }
+        bitmap.recycle();
+        bitmap = null;
+        outputImage.setImageBitmap(null);
+        outputImage = null;
+
+        System.gc();
 
         super.onDestroy();
     }
@@ -98,13 +97,14 @@ public class PreprocessingFragment extends Fragment {
                     // Retrieve bitmap
                     bitmap = MediaStore.Images.Media.getBitmap(
                             getActivity().getApplicationContext().getContentResolver(), uri);
-                    getActivity().getApplicationContext().getContentResolver().delete(uri, null, null);
+                    getActivity().getApplicationContext().getContentResolver().delete(
+                            uri, null, null);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 // Convert bitmap to mat
-                Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8U);
+                mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8U);
                 Utils.bitmapToMat(bitmap, mat);
 
                 // Start preprocessing proper
@@ -158,6 +158,9 @@ public class PreprocessingFragment extends Fragment {
 
     // Displays image on screen
     private void displayImage(Mat mat) {
+        bitmap.recycle();
+        bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+
         // Convert mat to bitmap
         Utils.matToBitmap(mat, bitmap);
 

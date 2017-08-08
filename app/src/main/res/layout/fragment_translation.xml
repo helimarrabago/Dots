@@ -17,7 +17,11 @@
         <EditText
             android:id="@+id/output"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-light"
+            android:background="@android:color/transparent"/>
     </ScrollView>
     <View
         android:id="@+id/blockBottom"
