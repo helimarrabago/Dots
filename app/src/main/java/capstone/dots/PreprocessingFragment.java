@@ -667,12 +667,14 @@ public class PreprocessingFragment extends Fragment {
         return refinedXCoords;
     }
 
+    // Displays progress dialog box
     protected void showProgressDialog(String message) {
         progressDialogFragment = new ProgressDialogFragment(message);
         FragmentManager fm = getFragmentManager();
         progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
     }
 
+    // Destroys progress dialog box
     protected void dismissDialog() {
         progressDialogFragment.dismissAllowingStateLoss();
     }

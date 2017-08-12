@@ -27,5 +27,8 @@
             android:name=".ProcessingActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustNothing"/>
+        <activity
+            android:name=".HelpActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 </manifest>

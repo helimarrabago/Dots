@@ -18,7 +18,7 @@ import com.scanlibrary.ScanConstants;
  */
 
 public class HomeFragment extends Fragment {
-    private View mView;
+    private View view;
     private ImageButton camera_button;
     private ImageButton gallery_button;
 
@@ -26,9 +26,9 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.fragment_home, container, false);
+        view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        return mView;
+        return view;
     }
 
     @Override
