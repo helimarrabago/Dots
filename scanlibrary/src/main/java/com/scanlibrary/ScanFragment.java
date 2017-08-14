@@ -30,7 +30,8 @@ import java.util.Map;
 public class ScanFragment extends Fragment {
 
     // Changed name for better context
-    private ImageButton doneButton;
+    private ImageButton proceedButton;
+    private ImageButton cancelButton;
     // Added for rotation feature
     private ImageButton rotLeftButton;
     private ImageButton rotRightButton;
@@ -65,12 +66,14 @@ public class ScanFragment extends Fragment {
 
     private void init() {
         sourceImageView = (ImageView) view.findViewById(R.id.sourceImageView);
-        doneButton = (ImageButton) view.findViewById(R.id.doneButton);
-        doneButton.setOnClickListener(new ScanButtonClickListener());
+        cancelButton = (ImageButton) view.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(onClickCancel());
+        proceedButton = (ImageButton) view.findViewById(R.id.proceedButton);
+        proceedButton.setOnClickListener(onClickProceed());
         rotRightButton = (ImageButton) view.findViewById(R.id.rotRightButton);
-        rotRightButton.setOnClickListener(new onClickRotRight());
+        rotRightButton.setOnClickListener(onClickRotRight());
         rotLeftButton = (ImageButton) view.findViewById(R.id.rotLeftButton);
-        rotLeftButton.setOnClickListener(new onClickRotLeft());
+        rotLeftButton.setOnClickListener(onClickRotLeft());
         sourceFrame = (FrameLayout) view.findViewById(R.id.sourceFrame);
         polygonView = (PolygonView) view.findViewById(R.id.polygonView);
         sourceFrame.post(new Runnable() {
@@ -84,58 +87,77 @@ public class ScanFragment extends Fragment {
         });
     }
 
-    // Class to rotate image 90 degrees clockwise
-    // Resorted to Java's readily available Bitmap methods instead of NDK
-    private class onClickRotRight implements View.OnClickListener {
-        @Override
-        public void onClick(final View v) {
-            // Create matrix object (for transformation)
-            Matrix mat = new Matrix();
-            // Set rotation to 90 degrees clockwise
-            mat.postRotate(90);
-            // Create a copy (same w and h) of original bitmap
-            // Parameters: source bitmap, new width, new height, filter
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(
-                    original, original.getWidth(), original.getHeight(), true);
-            // Create a copy of bitmap transformed by matrix
-            // Parameters: source bitmap, x-coor of 1st pixel, y-coor of 1st pixel,
-            // width, height, matrix to transform, filter
-            // Actual rotation happens here
-            Bitmap rotatedBitmap = Bitmap.createBitmap(
-                    scaledBitmap, 0, 0, scaledBitmap.getWidth(),
-                    scaledBitmap.getHeight(), mat, true);
-            // Set the original bitmap to the rotated one
-            original = rotatedBitmap;
-
-
-            setBitmap(original);
-        }
+    private View.OnClickListener onClickCancel() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        };
     }
 
-    // Class to rotate image 90 degrees counterclockwise
-    private class onClickRotLeft implements View.OnClickListener {
-        @Override
-        public void onClick(final View v) {
-            // Create matrix object (for transformation)
-            Matrix mat = new Matrix();
-            // Set rotation to 270 degrees clockwise (= 90 degrees counterclockwise)
-            mat.postRotate(270);
-            // Create a copy (same w and h) of original bitmap
-            // Parameters: source bitmap, new width, new height, filter
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(
-                    original, original.getWidth(), original.getHeight(), true);
-            // Create a copy of bitmap transformed by matrix
-            // Parameters: source bitmap, x-coor of 1st pixel, y-coor of 1st pixel,
-            // width, height, matrix to transform, filter
-            // Actual rotation happens here
-            Bitmap rotatedBitmap = Bitmap.createBitmap(
-                    scaledBitmap, 0, 0, scaledBitmap.getWidth(),
-                    scaledBitmap.getHeight(), mat, true);
-            // Set the original bitmap to the rotated one
-            original = rotatedBitmap;
+    private View.OnClickListener onClickProceed() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<Integer, PointF> points = polygonView.getPoints();
+                if (isScanPointsValid(points)) {
+                    new ScanAsyncTask(points).execute();
+                } else {
+                    showErrorDialog();
+                }
+            }
+        };
+    }
 
-            setBitmap(original);
-        }
+    /* Rotates image 90 degrees clockwise */
+    private View.OnClickListener onClickRotRight() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create matrix object (for transformation)
+                Matrix mat = new Matrix();
+                // Set rotation to 90 degrees clockwise
+                mat.postRotate(90);
+                // Create a copy (same w and h) of original bitmap
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(
+                        original, original.getWidth(), original.getHeight(), true);
+                // Create a copy of bitmap transformed by matrix
+                // Actual rotation happens here
+                Bitmap rotatedBitmap = Bitmap.createBitmap(
+                        scaledBitmap, 0, 0, scaledBitmap.getWidth(),
+                        scaledBitmap.getHeight(), mat, true);
+                // Set the original bitmap to the rotated one
+                original = rotatedBitmap;
+
+                setBitmap(original);
+            }
+        };
+    }
+
+    /* Rotates image 90 degrees counterclockwise */
+    private View.OnClickListener onClickRotLeft() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create matrix object (for transformation)
+                Matrix mat = new Matrix();
+                // Set rotation to 270 degrees clockwise (90 degrees counterclockwise)
+                mat.postRotate(270);
+                // Create a copy (same w and h) of original bitmap
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(
+                        original, original.getWidth(), original.getHeight(), true);
+                // Create a copy of bitmap transformed by matrix
+                // Actual rotation happens here
+                Bitmap rotatedBitmap = Bitmap.createBitmap(
+                        scaledBitmap, 0, 0, scaledBitmap.getWidth(),
+                        scaledBitmap.getHeight(), mat, true);
+                // Set the original bitmap to the rotated one
+                original = rotatedBitmap;
+
+                setBitmap(original);
+            }
+        };
     }
 
     private Bitmap getBitmap() {
@@ -167,18 +189,6 @@ public class ScanFragment extends Fragment {
         layoutParams.gravity = Gravity.CENTER;
         polygonView.setLayoutParams(layoutParams);
     }
-
-    /*private Map<Integer, PointF> getQuarterPoints(Bitmap tempBitmap) {
-        Map<Integer, PointF> outlinePoints = new HashMap<>();
-        outlinePoints.put(0, new PointF(tempBitmap.getWidth() / 4, tempBitmap.getHeight() / 4));
-        outlinePoints.put(1, new PointF(tempBitmap.getWidth() - (tempBitmap.getWidth() / 4),
-                tempBitmap.getHeight() / 4));
-        outlinePoints.put(2, new PointF(tempBitmap.getWidth() / 4,
-                tempBitmap.getHeight() - (tempBitmap.getHeight() / 4)));
-        outlinePoints.put(3, new PointF(tempBitmap.getWidth() - (tempBitmap.getWidth() / 4),
-                tempBitmap.getHeight() - (tempBitmap.getHeight() / 4)));
-        return outlinePoints;
-    }*/
 
     // Commented out since algorithm does not work well; resorted to just initializing the crop
     // boundary to the border of the image (getOutlinePoints)
@@ -225,18 +235,6 @@ public class ScanFragment extends Fragment {
         return orderedPoints;
     }*/
 
-    private class ScanButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            Map<Integer, PointF> points = polygonView.getPoints();
-            if (isScanPointsValid(points)) {
-                new ScanAsyncTask(points).execute();
-            } else {
-                showErrorDialog();
-            }
-        }
-    }
-
     private void showErrorDialog() {
         SingleButtonDialogFragment fragment = new SingleButtonDialogFragment(R.string.ok, getString(R.string.cantCrop), "Error", true);
         FragmentManager fm = getActivity().getFragmentManager();
@@ -276,7 +274,7 @@ public class ScanFragment extends Fragment {
 
         private Map<Integer, PointF> points;
 
-        public ScanAsyncTask(Map<Integer, PointF> points) {
+        private ScanAsyncTask(Map<Integer, PointF> points) {
             this.points = points;
         }
 

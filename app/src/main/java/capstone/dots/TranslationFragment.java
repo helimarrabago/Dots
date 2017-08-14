@@ -92,13 +92,11 @@ public class TranslationFragment extends Fragment {
 
     private void outputTranslation(ArrayList<String> translation) {
         for (int i = 0; i < translation.size(); i++) {
-            System.out.println(translation.get(i));
             if (translation.get(i).contains("NON")) {
                 String[] parts = translation.get(i).split("NON");
 
                 if (parts.length > 0) {
                     for (int j = 0; j < parts.length - 1; j++) {
-                        System.out.println(parts[j]);
                         output.append(parts[j]);
                         Spannable out = new SpannableString("?");
                         out.setSpan(new ForegroundColorSpan(
@@ -107,6 +105,15 @@ public class TranslationFragment extends Fragment {
                         output.append(out);
                     }
                     output.append(parts[parts.length - 1]);
+
+                    if (translation.get(i).substring(translation.get(i).length() - 3)
+                            .equals("NON")) {
+                        Spannable out = new SpannableString("?");
+                        out.setSpan(new ForegroundColorSpan(
+                                        getResources().getColor(R.color.red)), 0, 1,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        output.append(out);
+                    }
                 }
                 else {
                     String str = translation.get(i);
@@ -136,9 +143,10 @@ public class TranslationFragment extends Fragment {
         HashMap<String, String> hash = new HashMap<>();
 
         // File list:
-        // 0 - compositions, 1 - letters, 2 - numbers, 3 - one cell lower, 4 - one cell part word
-        // 5 - one cell whole word, 6 - punctuations, 7 - short form, 8 - two cells final
-        // 9 - two cells initial
+        // 0 - compositions, 1 - letters, 2 - numbers, 3 - onc cell lower begin
+        // 4 - one cell lower middle, 5 - one cell lower whole, 6 - one cell part word
+        // 7 - one cell whole word, 8 - punctuations, 9 - short form, 10 - two cells final
+        // 12 - two cells initial
 
         hash.put("15", "NUM");
         hash.put("05", "ITA");
@@ -148,16 +156,16 @@ public class TranslationFragment extends Fragment {
 
         files.add(hash);
 
-        String[] paths = {"letters.txt", "numbers.txt", "onelower.txt",
-                "onepartword.txt", "onewholeword.txt", "punctuations.txt",
+        String[] paths = {"letters.txt", "numbers.txt", "onelowerbegin.txt", "onelowermiddle.txt",
+                "onelowerwhole.txt", "onepartword.txt", "onewholeword.txt", "punctuations.txt",
                 "shortform.txt", "twofinal.txt", "twoinitial.txt"};
 
-        for (int i = 0; i < paths.length; i++) {
+        for (String str : paths) {
             hash = new HashMap<>();
 
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        getActivity().getAssets().open(paths[i])));
+                        getActivity().getAssets().open(str)));
 
                 String line = "";
                 while ((line = reader.readLine()) != null) {
@@ -283,13 +291,10 @@ public class TranslationFragment extends Fragment {
 
                 while (!binary.get(i).equals("end") && !binary.get(i).equals("000000")) {
                     val = Integer.parseInt(binary.get(i), 2);
-                    if (val < 10)
-                        dec = "0" + String.valueOf(val);
-                    else
-                        dec = String.valueOf(val);
+                    if (val < 10) dec = "0" + String.valueOf(val);
+                    else dec = String.valueOf(val);
 
                     word += dec;
-
                     i++;
                 }
 
@@ -335,55 +340,112 @@ public class TranslationFragment extends Fragment {
         String output = "";
         String composition = "";
 
-        int i = 0;
+        // File list:
+        // 0 - compositions, 1 - letters, 2 - numbers, 3 - onc cell lower begin
+        // 4 - one cell lower middle, 5 - one cell lower whole, 6 - one cell part word
+        // 7 - one cell whole word, 8 - punctuations, 9 - short form, 10 - two cells final
+        // 12 - two cells initial
+
         // Check if preceded by a composition sign
         if (segment.length() > 2) {
             // Preceded by a two-cell composition sign
             if (files.get(0).containsKey(segment.substring(0, 4))) {
                 composition = files.get(0).get(segment.substring(0, 4));
-                i += 4;
+                segment = segment.substring(4);
             }
             // Precede by a one-cell composition sign
             else if (files.get(0).containsKey(segment.substring(0, 2))) {
                 composition = files.get(0).get(segment.substring(0, 2));
-                i += 2;
+                segment = segment.substring(2);
             }
         }
 
         // Translate when segment is a number
         if (composition.equals("NUM")) {
-            while (i < segment.length()) {
+            for (int i = 0; i < segment.length(); i += 2) {
                 if (files.get(2).containsKey(segment.substring(i, i + 2)))
                     output += files.get(2).get(segment.substring(i, i + 2));
                 else output += "NON";
-                i += 2;
             }
         }
         // Translate when segment is a word
         // Start with Grade 2, then Grade 1
         else {
             // Check if only one cell remains in segment
-            if (segment.substring(i).length() == 2) {
+            if (segment.length() == 2) {
                 // Translate one-cell whole word contraction
-                if (files.get(5).containsKey(segment.substring(i, i + 2)))
-                    output = files.get(5).get(segment.substring(i, i + 2));
+                if (files.get(7).containsKey(segment))
+                    output = files.get(7).get(segment);
+                // Translate one-cell lower sign whole world contraction
+                else if (files.get(5).containsKey(segment))
+                    output = files.get(5).get(segment);
                 // Translate letter
-                else if (files.get(1).containsKey(segment.substring(i, i + 2)))
-                    output = files.get(1).get(segment.substring(i, i + 2));
-                i += 2;
+                else if (files.get(1).containsKey(segment))
+                    output = files.get(1).get(segment);
             }
-            // Translate letter-by-letter (Grade 1 Braille)
+            // If more than one cell remain
             else {
-                while (i < segment.length()) {
-                    if (files.get(1).containsKey(segment.substring(i, i + 2)))
-                        output += files.get(1).get(segment.substring(i, i + 2));
-                    else output += "NON";
+                // Translate short form whole word contraction
+                if (files.get(9).containsKey(segment)) {
+                    output = files.get(9).get(segment);
+                }
+                else {
+                    // Translate one-cell lower sign beginning contraction
+                    if (files.get(3).containsKey(segment.substring(0, 4))) {
+                        output = files.get(3).get(segment.substring(0, 4));
+                        segment = segment.substring(4);
+                    }
+                    else if (files.get(3).containsKey(segment.substring(0, 2))) {
+                        output = files.get(3).get(segment.substring(0, 2));
+                        segment = segment.substring(2);
+                    }
 
-                    i += 2;
+                    while (segment.length() > 0) {
+                        // Translate two-cell initial and final contractions
+                        if (segment.length() >= 4) {
+                            if (files.get(11).containsKey(segment.substring(0, 4))) {
+                                output += files.get(11).get(segment.substring(0, 4));
+                                segment = segment.substring(4);
+                            }
+                            else if (files.get(10).containsKey(segment.substring(0, 4))) {
+                                output += files.get(10).get(segment.substring(0, 4));
+                                segment = segment.substring(4);
+                            }
+                        }
+
+                        if (segment.length() == 0) break;
+
+                        // Translate one-cell part word contraction
+                        if (files.get(6).containsKey(segment.substring(0, 2))) {
+                            output += files.get(6).get(segment.substring(0, 2));
+                            segment = segment.substring(2);
+                        }
+                        // Translate one-cell lower sign middle contraction
+                        else if (files.get(4).containsKey(segment.substring(0, 2)) &&
+                                segment.length() > 2) {
+                            output += files.get(4).get(segment.substring(0, 2));
+                            segment = segment.substring(2);
+                        }
+                        // Translate letter
+                        else if (files.get(1).containsKey(segment.substring(0, 2))) {
+                            output += files.get(1).get(segment.substring(0, 2));
+                            segment = segment.substring(2);
+                        }
+                        // Translate punctuation
+                        else if (files.get(8).containsKey(segment.substring(0, 2))) {
+                            output += files.get(8).get(segment.substring(0, 2));
+                            segment = segment.substring(2);
+                        }
+                        else {
+                            output += "NON";
+                            segment = segment.substring(2);
+                        }
+                    }
                 }
             }
         }
 
+        // Apply composition sign
         switch (composition) {
             case "CAP":
                 output = output.substring(0, 1).toUpperCase() + output.substring(1);

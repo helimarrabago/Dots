@@ -27,7 +27,7 @@ public class BackgroundFragment extends Fragment {
                 R.id.bI, R.id.bJ, R.id.bK, R.id.bL, R.id.bM, R.id.bN, R.id.bO, R.id.bP, R.id.bQ,
                 R.id.bR, R.id.bS, R.id.bT, R.id.bU, R.id.bV, R.id.bW, R.id.bX, R.id.bY, R.id.bZ};
 
-        letters = new ArrayList<>(26);
+        letters = new ArrayList<>();
         for (int i = 0; i < 26; i++) {
             TextView text = (TextView) view.findViewById(ids[i]);
             letters.add(text);
