@@ -1,5 +1,6 @@
 package capstone.dots;
 
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
@@ -41,7 +42,7 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
         Bundle bundle = new Bundle();
         bundle.putString("Uri", uri.toString());
         fragment.setArguments(bundle);
-        android.app.FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(capstone.dots.R.id.content, fragment);
         fragmentTransaction.commit();
@@ -56,7 +57,7 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
         bundle.putIntegerArrayList("xCoords", xCoords);
         bundle.putIntegerArrayList("yCoords", yCoords);
         fragment.setArguments(bundle);
-        android.app.FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(capstone.dots.R.id.content, fragment);
         fragmentTransaction.commit();

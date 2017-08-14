@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:fontFamily="sans-serif-light"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textColor="@android:color/black"
             android:text="Touch to start translating"/>
         <ImageButton
@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textColor="@android:color/black"
             android:text="Touch to proceed to gallery"/>
     </LinearLayout>

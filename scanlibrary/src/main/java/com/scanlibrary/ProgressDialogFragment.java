@@ -25,6 +25,7 @@ public class ProgressDialogFragment extends DialogFragment {
 		dialog.setMessage(message);
 		dialog.setCancelable(false);
 		dialog.setCanceledOnTouchOutside(false);
+		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		// Disable the back button
 		OnKeyListener keyListener = new OnKeyListener() {
 

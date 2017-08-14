@@ -19,14 +19,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:fontFamily="sans-serif-light"
             android:background="@android:color/transparent"/>
     </ScrollView>
-    <View
+    <LinearLayout
         android:id="@+id/blockBottom"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:background="@color/colorPrimary"/>
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/cancelButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/cancel_icon"/>
+        <ImageButton
+            android:id="@+id/proceedButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/proceed_icon"/>
+    </LinearLayout>
 </RelativeLayout>

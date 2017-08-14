@@ -4,10 +4,14 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.scanlibrary.ProgressDialogFragment;
 
@@ -28,6 +32,8 @@ import java.util.HashMap;
 public class TranslationFragment extends Fragment {
     private View view;
     private EditText output;
+    private ImageButton cancelButton;
+    private ImageButton proceedButton;
     private ProgressDialogFragment progressDialogFragment;
 
     private ArrayList<HashMap<String, String>> files = new ArrayList<>();
@@ -42,6 +48,10 @@ public class TranslationFragment extends Fragment {
 
     private void init() {
         output = (EditText) view.findViewById(R.id.output);
+        cancelButton = (ImageButton) view.findViewById(R.id.cancelButton);
+        proceedButton = (ImageButton) view.findViewById(R.id.proceedButton);
+
+        cancelButton.setOnClickListener(onClickCancel());
 
         long addr = getArguments().getLong("mat", 0);
         Mat temp = new Mat(addr);
@@ -57,13 +67,12 @@ public class TranslationFragment extends Fragment {
 
                   ArrayList<String> binary = getBinary(mat, xCoords, yCoords);
                   ArrayList<String> decimal = convertToDecimal(binary);
-                  final ArrayList<String> translation = translateDecimal(decimal);
+                  final ArrayList<String> translation = getTranslation(decimal);
 
                   getActivity().runOnUiThread(new Runnable() {
                       @Override
                       public void run() {
-                          for (int i = 0; i < translation.size(); i++)
-                              output.append(translation.get(i));
+                          outputTranslation(translation);
 
                           dismissDialog();
                       }
@@ -72,28 +81,72 @@ public class TranslationFragment extends Fragment {
           });
     }
 
-    // Populate files array list with the .txt files in assets directory
+    private View.OnClickListener onClickCancel() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        };
+    }
+
+    private void outputTranslation(ArrayList<String> translation) {
+        for (int i = 0; i < translation.size(); i++) {
+            System.out.println(translation.get(i));
+            if (translation.get(i).contains("NON")) {
+                String[] parts = translation.get(i).split("NON");
+
+                if (parts.length > 0) {
+                    for (int j = 0; j < parts.length - 1; j++) {
+                        System.out.println(parts[j]);
+                        output.append(parts[j]);
+                        Spannable out = new SpannableString("?");
+                        out.setSpan(new ForegroundColorSpan(
+                                        getResources().getColor(R.color.red)), 0, 1,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        output.append(out);
+                    }
+                    output.append(parts[parts.length - 1]);
+                }
+                else {
+                    String str = translation.get(i);
+                    int ind = str.indexOf("NON");
+                    int cnt = 0;
+                    while (ind != -1) {
+                        cnt++;
+                        str = str.substring(ind + 1);
+                        ind = str.indexOf("NON");
+                    }
+
+                    for (int j = 0; j < cnt; j++) {
+                        Spannable out = new SpannableString("?");
+                        out.setSpan(new ForegroundColorSpan(
+                                        getResources().getColor(R.color.red)), 0, 1,
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        output.append(out);
+                    }
+                }
+            }
+            else output.append(translation.get(i));
+        }
+    }
+
+    /* Populate files array list with the .txt files in assets directory */
     private void loadFiles(ArrayList<HashMap<String, String>> files) {
         HashMap<String, String> hash = new HashMap<>();
 
-        /* File list:
-            0 - composition
-            1 - letters
-            2 - numbers
-            3 - one cell lower
-            4 - one cell part word
-            5 - one cell whole word
-            6 - punctuations
-            7 - short form
-            8 - two cells final
-            9 - two cells initial
-         */
+        // File list:
+        // 0 - compositions, 1 - letters, 2 - numbers, 3 - one cell lower, 4 - one cell part word
+        // 5 - one cell whole word, 6 - punctuations, 7 - short form, 8 - two cells final
+        // 9 - two cells initial
 
         hash.put("15", "NUM");
         hash.put("05", "ITA");
         hash.put("0505", "DBL_ITA");
         hash.put("01", "CAP");
         hash.put("0101", "DBL_CAP");
+
+        files.add(hash);
 
         String[] paths = {"letters.txt", "numbers.txt", "onelower.txt",
                 "onepartword.txt", "onewholeword.txt", "punctuations.txt",
@@ -248,43 +301,99 @@ public class TranslationFragment extends Fragment {
     }
 
     /* Translate decimal codes to English counterpart */
-    private ArrayList<String> translateDecimal(ArrayList<String> decimal) {
+    private ArrayList<String> getTranslation(ArrayList<String> decimal) {
         ArrayList<String> translation = new ArrayList<>();
 
-        /* Translate by segment */
+        // Translate by segment
         for (int i = 0; i < decimal.size(); i++) {
-            String str = decimal.get(i);
-            String out = "";
-            String com = "";
+            String segment = decimal.get(i);
+            String output = "";
 
-            if (str.equals("00")) out = " ";
-            else if (str.equals("64")) out = "\n";
-            else {
-                int j = 0;
+            System.out.println(segment);
 
-                /* Check if preceded by a composition sign */
-                if (files.get(0).get(str.substring(0, 4)) != null) {
-                    com = files.get(0).get(str.substring(0, 4));
-                    j += 4;
-                } else if (files.get(0).get(str.substring(0, 2)) != null) {
-                    com = files.get(0).get(str.substring(0, 2));
-                    j += 2;
-                }
-
-                /* Translate when non-number */
-                if (!com.equals("NUM")) {
-                    while (j < str.length()) {
-                        if (files.get(1).get(str.substring(0, 2)) != null)
-                            out += files.get(1).get(str.substring(0, 2));
-                        else out += "NON";
-                    }
-                }
+            switch (segment) {
+                case "00":
+                    output = " ";
+                    break;
+                case "64":
+                    output = "\n";
+                    break;
+                default:
+                    output = translateDecimal(segment);
+                    break;
             }
 
-            translation.add(out);
+            System.out.println(output);
+
+            translation.add(output);
         }
 
         return translation;
+    }
+
+    private String translateDecimal(String segment) {
+        String output = "";
+        String composition = "";
+
+        int i = 0;
+        // Check if preceded by a composition sign
+        if (segment.length() > 2) {
+            // Preceded by a two-cell composition sign
+            if (files.get(0).containsKey(segment.substring(0, 4))) {
+                composition = files.get(0).get(segment.substring(0, 4));
+                i += 4;
+            }
+            // Precede by a one-cell composition sign
+            else if (files.get(0).containsKey(segment.substring(0, 2))) {
+                composition = files.get(0).get(segment.substring(0, 2));
+                i += 2;
+            }
+        }
+
+        // Translate when segment is a number
+        if (composition.equals("NUM")) {
+            while (i < segment.length()) {
+                if (files.get(2).containsKey(segment.substring(i, i + 2)))
+                    output += files.get(2).get(segment.substring(i, i + 2));
+                else output += "NON";
+                i += 2;
+            }
+        }
+        // Translate when segment is a word
+        // Start with Grade 2, then Grade 1
+        else {
+            // Check if only one cell remains in segment
+            if (segment.substring(i).length() == 2) {
+                // Translate one-cell whole word contraction
+                if (files.get(5).containsKey(segment.substring(i, i + 2)))
+                    output = files.get(5).get(segment.substring(i, i + 2));
+                // Translate letter
+                else if (files.get(1).containsKey(segment.substring(i, i + 2)))
+                    output = files.get(1).get(segment.substring(i, i + 2));
+                i += 2;
+            }
+            // Translate letter-by-letter (Grade 1 Braille)
+            else {
+                while (i < segment.length()) {
+                    if (files.get(1).containsKey(segment.substring(i, i + 2)))
+                        output += files.get(1).get(segment.substring(i, i + 2));
+                    else output += "NON";
+
+                    i += 2;
+                }
+            }
+        }
+
+        switch (composition) {
+            case "CAP":
+                output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                break;
+            case "DBL_CAP":
+                output = output.toUpperCase();
+                break;
+        }
+
+        return output;
     }
 
     /* Displays progress dialog */
@@ -294,7 +403,7 @@ public class TranslationFragment extends Fragment {
         progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
     }
 
-    /* Destroys progess dialog */
+    /* Destroys progress dialog */
     protected void dismissDialog() {
         progressDialogFragment.dismissAllowingStateLoss();
     }
