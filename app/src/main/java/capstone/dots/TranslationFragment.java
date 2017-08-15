@@ -401,14 +401,47 @@ public class TranslationFragment extends Fragment {
                     }
 
                     while (segment.length() > 0) {
-                        // Translate two-cell initial and final contractions
+                        // Translate five-cell short form contraction
+                        if (segment.length() >= 10) {
+                            if (files.get(9).containsKey(segment.substring(0, 10))) {
+                                output += files.get(9).get(segment.substring(0, 10));
+                                segment = segment.substring(10);
+                            }
+                        }
+                        // Translate four-cell short form contraction
+                        if (segment.length() >= 8) {
+                            if (files.get(9).containsKey(segment.substring(0, 8))) {
+                                output += files.get(9).get(segment.substring(0, 8));
+                                segment = segment.substring(8);
+                            }
+                        }
+                        // Translate three-cell short form contraction
+                        if (segment.length() >= 8) {
+                            if (files.get(9).containsKey(segment.substring(0, 6))) {
+                                output += files.get(9).get(segment.substring(0, 6));
+                                segment = segment.substring(6);
+                            }
+                        }
+                        // Translate two-cell contractions
                         if (segment.length() >= 4) {
+                            // Translate two-cell initial contraction
                             if (files.get(11).containsKey(segment.substring(0, 4))) {
                                 output += files.get(11).get(segment.substring(0, 4));
                                 segment = segment.substring(4);
                             }
+                            // Translate two-cell final contraction
                             else if (files.get(10).containsKey(segment.substring(0, 4))) {
                                 output += files.get(10).get(segment.substring(0, 4));
+                                segment = segment.substring(4);
+                            }
+                            // Translate two-cell short form contraction
+                            else if (files.get(9).containsKey(segment.substring(0, 4))) {
+                                output += files.get(9).get(segment.substring(0, 4));
+                                segment = segment.substring(4);
+                            }
+                            // Translate composition sign
+                            else if (files.get(0).containsKey(segment.substring(0, 4))) {
+                                output += files.get(0).get(segment.substring(0, 4));
                                 segment = segment.substring(4);
                             }
                         }
@@ -434,6 +467,11 @@ public class TranslationFragment extends Fragment {
                         // Translate punctuation
                         else if (files.get(8).containsKey(segment.substring(0, 2))) {
                             output += files.get(8).get(segment.substring(0, 2));
+                            segment = segment.substring(2);
+                        }
+                        // Translate composition sign
+                        else if (files.get(0).containsKey(segment.substring(0, 2))) {
+                            output += files.get(0).get(segment.substring(0, 2));
                             segment = segment.substring(2);
                         }
                         else {
