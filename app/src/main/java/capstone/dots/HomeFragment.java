@@ -38,16 +38,26 @@ public class HomeFragment extends Fragment {
         camera_button = (ImageButton) view.findViewById(R.id.camera_button);
         gallery_button = (ImageButton) view.findViewById(R.id.gallery_button);
 
-        camera_button.setOnClickListener(onClickButton(ScanConstants.OPEN_CAMERA));
-        gallery_button.setOnClickListener(onClickButton(ScanConstants.OPEN_MEDIA));
+        camera_button.setOnClickListener(onClickCamera());
+        gallery_button.setOnClickListener(onClickGallery());
     }
 
-    private View.OnClickListener onClickButton(final int preference) {
+    private View.OnClickListener onClickCamera() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), CameraActivity.class);
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        };
+    }
+
+    private View.OnClickListener onClickGallery() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), ScanActivity.class);
-                intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, preference);
+                intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_MEDIA);
                 startActivityForResult(intent, REQUEST_CODE);
             }
         };

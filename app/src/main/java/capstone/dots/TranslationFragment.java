@@ -313,6 +313,7 @@ public class TranslationFragment extends Fragment {
         for (int i = 0; i < decimal.size(); i++) {
             String segment = decimal.get(i);
             String output = "";
+            String composition = "";
 
             System.out.println(segment);
 
@@ -329,6 +330,11 @@ public class TranslationFragment extends Fragment {
             }
 
             System.out.println(output);
+
+            if (output.contains("_"))
+                composition = output.substring(output.indexOf("_"), output.lastIndexOf("_"));
+
+            System.out.println(composition);
 
             translation.add(output);
         }
@@ -471,7 +477,7 @@ public class TranslationFragment extends Fragment {
                         }
                         // Translate composition sign
                         else if (files.get(0).containsKey(segment.substring(0, 2))) {
-                            output += files.get(0).get(segment.substring(0, 2));
+                            output += "_" + files.get(0).get(segment.substring(0, 2)) + "_";
                             segment = segment.substring(2);
                         }
                         else {
