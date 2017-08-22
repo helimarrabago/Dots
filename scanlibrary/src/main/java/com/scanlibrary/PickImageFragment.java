@@ -11,9 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
-import android.util.Log;
-import android.view.View;
-import android.widget.ImageButton;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,11 +21,6 @@ import java.util.Date;
  * Created by jhansi on 04/04/15.
  */
 public class PickImageFragment extends Fragment {
-
-    // Commented out since this fragment does not need a UI
-    private View view;
-    private ImageButton cameraButton;
-    private ImageButton galleryButton;
     private Uri fileUri;
     private IScanner scanner;
 
@@ -48,18 +40,7 @@ public class PickImageFragment extends Fragment {
         init();
     }
 
-    /*@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.pick_image_fragment, null);
-        init();
-        return view;
-    }*/
-
     private void init() {
-        /*cameraButton = (ImageButton) view.findViewById(R.id.cameraButton);
-        cameraButton.setOnClickListener(new CameraButtonClickListener());
-        galleryButton = (ImageButton) view.findViewById(R.id.selectButton);
-        galleryButton.setOnClickListener(new GalleryClickListener());*/
         if (isIntentPreferenceSet()) {
             handleIntentPreference();
         } else {
@@ -97,19 +78,6 @@ public class PickImageFragment extends Fragment {
         return preference;
     }
 
-
-    /*private class CameraButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) { openCamera(); }
-    }
-
-    private class GalleryClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            openMediaContent();
-        }
-    }*/
-
     public void openMediaContent() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -120,7 +88,6 @@ public class PickImageFragment extends Fragment {
     public void openCamera() {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         File file = createImageFile();
-        boolean isDirectoryCreated = file.getParentFile().mkdirs();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Uri tempFileUri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
                     "com.scanlibrary.provider", // As defined in Manifest
@@ -137,8 +104,7 @@ public class PickImageFragment extends Fragment {
         clearTempImages();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
                 Date());
-        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-                ".jpg");
+        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp + ".jpg");
         fileUri = Uri.fromFile(file);
         return file;
     }
@@ -152,7 +118,6 @@ public class PickImageFragment extends Fragment {
                     case ScanConstants.START_CAMERA_REQUEST_CODE:
                         bitmap = getBitmap(fileUri);
                         break;
-
                     case ScanConstants.PICKFILE_REQUEST_CODE:
                         bitmap = getBitmap(data.getData());
                         break;
@@ -174,12 +139,12 @@ public class PickImageFragment extends Fragment {
         scanner.onBitmapSelect(uri);
     }
 
-    private Bitmap getBitmap(Uri selectedimg) throws IOException {
+    private Bitmap getBitmap(Uri selectedImg) throws IOException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 3;
         AssetFileDescriptor fileDescriptor = null;
         fileDescriptor =
-                getActivity().getContentResolver().openAssetFileDescriptor(selectedimg, "r");
+                getActivity().getContentResolver().openAssetFileDescriptor(selectedImg, "r");
         Bitmap original
                 = BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.getFileDescriptor(), null, options);

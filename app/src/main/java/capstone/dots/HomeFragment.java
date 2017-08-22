@@ -42,16 +42,18 @@ public class HomeFragment extends Fragment {
         gallery_button.setOnClickListener(onClickGallery());
     }
 
+    /* Opens the camera */
     private View.OnClickListener onClickCamera() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), CameraActivity.class);
-                startActivityForResult(intent, REQUEST_CODE);
+                startActivity(intent);
             }
         };
     }
 
+    /* Opens the gallery */
     private View.OnClickListener onClickGallery() {
         return new View.OnClickListener() {
             @Override

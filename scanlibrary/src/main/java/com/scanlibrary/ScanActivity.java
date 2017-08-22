@@ -17,7 +17,11 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.scan_layout);
-        init();
+
+        if (getPreferenceContent() == ScanConstants.OPEN_CAMERA) {
+            Uri uri = getIntent().getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
+            onBitmapSelect(uri);
+        } else if (getPreferenceContent() == ScanConstants.OPEN_MEDIA) init();
     }
 
     @Override

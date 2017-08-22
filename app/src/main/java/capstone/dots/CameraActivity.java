@@ -1,10 +1,14 @@
 package capstone.dots;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -35,6 +39,7 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
@@ -46,7 +51,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.scanlibrary.ScanActivity;
+import com.scanlibrary.ScanConstants;
+import com.scanlibrary.Utils;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -60,8 +70,8 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-
 public class CameraActivity extends AppCompatActivity implements SensorEventListener {
+    private static final int REQUEST_CODE = 99;
     private static final int REQUEST_CAMERA_PERMISSION = 0;
     private static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -110,7 +120,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private Size mPreviewSize;
 
     private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
-
         @Override
         public void onOpened(@NonNull CameraDevice cameraDevice) {
             // This method is called when the camera is opened.  We start camera preview here.
@@ -146,12 +155,10 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
-
         @Override
         public void onImageAvailable(ImageReader reader) {
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
         }
-
     };
 
     private CaptureRequest.Builder mPreviewRequestBuilder;
@@ -287,8 +294,35 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 checkWriteStoragePermission();
                 createImageFileName();
                 takePicture();
+                //sendImage();
             }
         };
+    }
+
+    private void sendImage() {
+        Intent intent = new Intent(this, ScanActivity.class);
+
+        Uri mFileUri = FileProvider.getUriForFile(getApplicationContext(),
+                "capstone.dots.provider", mFile);
+        Bitmap mBitmap = getBitmap(mFileUri);
+        if (mBitmap != null) {
+            Uri mBitmapUri = postImagePick(mBitmap);
+            intent.putExtra(ScanConstants.SCANNED_RESULT, mBitmapUri);
+            intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_CAMERA);
+            mBitmap.recycle();
+            System.gc();
+            startActivityForResult(intent, REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Intent intent = new Intent(this, ProcessingActivity.class);
+            intent.putExtra("Data", data);
+            startActivity(intent);
+        }
     }
 
     private void createImageFolder() {
@@ -302,13 +336,36 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private void createImageFileName() {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String prepend = "IMAGE_" + timestamp + "_";
+        String prepend = "IMG_" + timestamp;
         try {
             mFile = File.createTempFile(prepend, ".jpg", mFolder);
         } catch (IOException e) {
             e.printStackTrace();
         }
         mFileName = mFile.getAbsolutePath();
+    }
+
+    protected Uri postImagePick(Bitmap bitmap) {
+        Uri uri = Utils.getUri(CameraActivity.this, bitmap);
+        bitmap.recycle();
+
+        return uri;
+    }
+
+    private Bitmap getBitmap(Uri selectedImg) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 3;
+        AssetFileDescriptor fileDescriptor = null;
+        try {
+            fileDescriptor = getContentResolver().openAssetFileDescriptor(selectedImg, "r");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        Bitmap original
+                = BitmapFactory.decodeFileDescriptor(
+                fileDescriptor.getFileDescriptor(), null, options);
+
+        return original;
     }
 
     @Override
@@ -717,7 +774,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 mImage.close();
 
                 Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                mediaStoreUpdateIntent.setData(Uri.fromFile(new File(mFileName)));
+                mediaStoreUpdateIntent.setData(Uri.fromFile(mFile));
                 sendBroadcast(mediaStoreUpdateIntent);
 
                 if (null != output) {
@@ -727,6 +784,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                         e.printStackTrace();
                     }
                 }
+
+                sendImage();
             }
         }
     }

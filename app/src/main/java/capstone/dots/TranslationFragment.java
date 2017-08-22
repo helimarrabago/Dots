@@ -313,7 +313,6 @@ public class TranslationFragment extends Fragment {
         for (int i = 0; i < decimal.size(); i++) {
             String segment = decimal.get(i);
             String output = "";
-            String composition = "";
 
             System.out.println(segment);
 
@@ -331,10 +330,23 @@ public class TranslationFragment extends Fragment {
 
             System.out.println(output);
 
-            if (output.contains("_"))
-                composition = output.substring(output.indexOf("_"), output.lastIndexOf("_"));
+            if (output.contains("_")) {
+                String composition= output.substring(
+                        output.indexOf("_") + 1, output.lastIndexOf("_"));
 
-            System.out.println(composition);
+                translation.add(output.substring(0, output.indexOf("_")));
+                output = output.substring(output.lastIndexOf("_") + 1);
+
+                // Apply composition sign
+                switch (composition) {
+                    case "CAP":
+                        output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                        break;
+                    case "DBL_CAP":
+                        output = output.toUpperCase();
+                        break;
+                }
+            }
 
             translation.add(output);
         }
@@ -398,16 +410,19 @@ public class TranslationFragment extends Fragment {
                 else {
                     // Translate one-cell lower sign beginning contraction
                     if (files.get(3).containsKey(segment.substring(0, 4))) {
-                        output = files.get(3).get(segment.substring(0, 4));
+                        output = files.get(3).get(segment.substring(0, 4)) + " ";
                         segment = segment.substring(4);
                     }
                     else if (files.get(3).containsKey(segment.substring(0, 2))) {
                         output = files.get(3).get(segment.substring(0, 2));
+                        if (files.get(3).get(segment.substring(0, 2)).equals("to") ||
+                                files.get(3).get(segment.substring(0, 2)).equals("by"))
+                            output += " ";
                         segment = segment.substring(2);
                     }
 
                     while (segment.length() > 0) {
-                        // Translate five-cell short form contraction
+                        /*// Translate five-cell short form contraction
                         if (segment.length() >= 10) {
                             if (files.get(9).containsKey(segment.substring(0, 10))) {
                                 output += files.get(9).get(segment.substring(0, 10));
@@ -427,7 +442,7 @@ public class TranslationFragment extends Fragment {
                                 output += files.get(9).get(segment.substring(0, 6));
                                 segment = segment.substring(6);
                             }
-                        }
+                        }*/
                         // Translate two-cell contractions
                         if (segment.length() >= 4) {
                             // Translate two-cell initial contraction
@@ -440,14 +455,14 @@ public class TranslationFragment extends Fragment {
                                 output += files.get(10).get(segment.substring(0, 4));
                                 segment = segment.substring(4);
                             }
-                            // Translate two-cell short form contraction
+                            /*// Translate two-cell short form contraction
                             else if (files.get(9).containsKey(segment.substring(0, 4))) {
                                 output += files.get(9).get(segment.substring(0, 4));
                                 segment = segment.substring(4);
-                            }
+                            }*/
                             // Translate composition sign
                             else if (files.get(0).containsKey(segment.substring(0, 4))) {
-                                output += files.get(0).get(segment.substring(0, 4));
+                                output += "_" + files.get(0).get(segment.substring(0, 4)) + "_";
                                 segment = segment.substring(4);
                             }
                         }
