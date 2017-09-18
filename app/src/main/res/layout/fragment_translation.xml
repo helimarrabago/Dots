@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:textSize="20sp"
-            android:fontFamily="sans-serif-light"
+
             android:background="@android:color/transparent"/>
     </ScrollView>
     <LinearLayout
@@ -35,14 +35,18 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:padding="10dp"
             android:background="@null"
-            android:src="@drawable/cancel_icon"/>
+            android:scaleType="centerInside"
+            android:src="@mipmap/ic_cancel"/>
         <ImageButton
             android:id="@+id/proceedButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:padding="10dp"
             android:background="@null"
-            android:src="@drawable/proceed_icon"/>
+            android:scaleType="centerInside"
+            android:src="@mipmap/ic_proceed"/>
     </LinearLayout>
 </RelativeLayout>

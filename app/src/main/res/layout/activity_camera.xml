@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/colorPrimaryDark"
     tools:context="capstone.dots.CameraActivity">
     <capstone.dots.AutoFitTextureView
         android:id="@+id/texture"
@@ -27,11 +27,13 @@
     </FrameLayout>
     <ImageButton
         android:id="@+id/capture"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+        android:layout_width="75dp"
+        android:padding="10dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/capture_icon"
-        android:background="@null"
+        android:src="@mipmap/ic_camera"
+        android:background="@drawable/circular_button"
+        android:scaleType="centerInside"
         android:layout_marginBottom="20dp"/>
 </RelativeLayout>
