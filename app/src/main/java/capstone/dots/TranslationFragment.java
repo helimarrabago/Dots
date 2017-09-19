@@ -1,7 +1,6 @@
 package capstone.dots;
 
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -13,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
-import com.scanlibrary.ProgressDialogFragment;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -34,7 +33,7 @@ public class TranslationFragment extends Fragment {
     private EditText output;
     private ImageButton cancelButton;
     private ImageButton proceedButton;
-    private ProgressDialogFragment progressDialogFragment;
+    private MaterialDialog dialog;
 
     private ArrayList<HashMap<String, String>> files = new ArrayList<>();
 
@@ -519,13 +518,16 @@ public class TranslationFragment extends Fragment {
 
     /* Displays progress dialog */
     protected void showProgressDialog(String message) {
-        progressDialogFragment = new ProgressDialogFragment(message);
-        FragmentManager fm = getFragmentManager();
-        progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(message)
+                .progress(true, 0);
+
+        dialog = builder.build();
+        dialog.show();
     }
 
     /* Destroys progress dialog */
     protected void dismissDialog() {
-        progressDialogFragment.dismissAllowingStateLoss();
+        dialog.dismiss();
     }
 }

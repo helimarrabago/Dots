@@ -31,9 +31,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -73,7 +71,6 @@ import java.util.concurrent.TimeUnit;
 public class CameraActivity extends AppCompatActivity implements SensorEventListener {
     private static final int REQUEST_CODE = 99;
     private static final int REQUEST_CAMERA_PERMISSION = 0;
-    private static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -150,7 +147,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private Handler mBackgroundHandler;
     private ImageReader mImageReader;
     private File mFile;
-    private File mFolder;
     private String mFileName;
 
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
@@ -274,8 +270,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        createImageFolder();
-
         sm = (SensorManager)getSystemService(SENSOR_SERVICE);
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
@@ -291,7 +285,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkWriteStoragePermission();
                 createImageFileName();
                 takePicture();
                 //sendImage();
@@ -325,20 +318,11 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         }
     }
 
-    private void createImageFolder() {
-        File imageFile = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-        mFolder = new File(imageFile, "DotsImages");
-        if (!mFolder.exists()) {
-            mFolder.mkdirs();
-        }
-    }
-
     private void createImageFileName() {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String prepend = "IMG_" + timestamp;
         try {
-            mFile = File.createTempFile(prepend, ".jpg", mFolder);
+            mFile = File.createTempFile(timestamp, ".jpg",
+                                            new File(ScanConstants.IMAGE_PATH, "Images"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -403,13 +387,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getApplicationContext(),
-                        "Dots will not run without camera services", Toast.LENGTH_SHORT).show();
-            }
-        }
-        else if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(),
-                        "Dots needs to save image to run", Toast.LENGTH_SHORT).show();
+                        "Dots will not function without camera services", Toast.LENGTH_SHORT).show();
             }
         }
         else super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -809,22 +787,5 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
-    }
-
-    private void checkWriteStoragePermission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    Toast.makeText(this, "Dots needs to be able to save to external storage",
-                            Toast.LENGTH_SHORT).show();
-                }
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
-            }
-        }
     }
 }

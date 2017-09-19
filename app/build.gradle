@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "capstone.dots"
         minSdkVersion 21
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -26,9 +26,10 @@ dependencies {
     })
     compile project(':scanlibrary')
     compile project(':openCVLibrary320')
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support:appcompat-v7:26.0.1'
+    compile 'com.android.support:design:26.0.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.github.ViksaaSkool:AwesomeSplash:v1.0.0'
+    compile 'com.afollestad.material-dialogs:core:0.9.4.7'
     testCompile 'junit:junit:4.12'
 }

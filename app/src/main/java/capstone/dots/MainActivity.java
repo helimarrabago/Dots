@@ -1,15 +1,25 @@
 package capstone.dots;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.scanlibrary.ScanConstants;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -28,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
 
     private ImageButton helpButton;
+
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +62,59 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setTabGravity(TabLayout.GRAVITY_CENTER);
         tabLayout.setTabMode(TabLayout.MODE_FIXED);
 
+        checkWriteStoragePermission();
+        createAppFolder();
+
         System.loadLibrary("opencv_java3");
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION) {
+            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Dots needs to be able to save to external storage",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        else super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void checkWriteStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Toast.makeText(this, "Dots needs to be able to save to external storage",
+                            Toast.LENGTH_SHORT).show();
+                }
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
+            }
+        }
+    }
+
+    /* Creates application-specific folder */
+    private void createAppFolder() {
+        File mFolder = new File(ScanConstants.IMAGE_PATH);
+
+        boolean success = false;
+        if (!mFolder.exists()) success = mFolder.mkdirs();
+
+        if (success) {
+            File mSub1 = new File(ScanConstants.IMAGE_PATH, "Images");
+            File mSub2 = new File(ScanConstants.IMAGE_PATH, "Translations");
+
+            if (!mSub1.exists()) mSub1.mkdir();
+            if (!mSub2.exists()) mSub2.mkdir();
+        }
+    }
+
+    /* Opens the Help Me screen */
     private View.OnClickListener onClickHelp() {
         return new View.OnClickListener() {
             @Override

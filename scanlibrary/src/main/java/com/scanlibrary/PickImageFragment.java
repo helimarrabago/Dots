@@ -7,13 +7,13 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -62,7 +62,7 @@ public class PickImageFragment extends Fragment {
         int preference = getIntentPreference();
 
         if (preference == ScanConstants.OPEN_CAMERA) {
-            openCamera();
+            //openCamera();
         } else if (preference == ScanConstants.OPEN_MEDIA) {
             openMediaContent();
         }
@@ -85,7 +85,7 @@ public class PickImageFragment extends Fragment {
         startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
     }
 
-    public void openCamera() {
+    /*public void openCamera() {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         File file = createImageFile();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -98,16 +98,7 @@ public class PickImageFragment extends Fragment {
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
         }
         startActivityForResult(cameraIntent, ScanConstants.START_CAMERA_REQUEST_CODE);
-    }
-
-    private File createImageFile() {
-        clearTempImages();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-                Date());
-        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp + ".jpg");
-        fileUri = Uri.fromFile(file);
-        return file;
-    }
+    }*/
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -117,9 +108,13 @@ public class PickImageFragment extends Fragment {
                 switch (requestCode) {
                     case ScanConstants.START_CAMERA_REQUEST_CODE:
                         bitmap = getBitmap(fileUri);
+
                         break;
                     case ScanConstants.PICKFILE_REQUEST_CODE:
                         bitmap = getBitmap(data.getData());
+                        byte[] byteArray = getBitmapAsByteArray(bitmap);
+                        createImageFile(byteArray);
+
                         break;
                 }
             } catch (Exception e) {
@@ -130,6 +125,25 @@ public class PickImageFragment extends Fragment {
         }
         if (bitmap != null) {
             postImagePick(bitmap);
+        }
+    }
+
+    private byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
+
+    private void createImageFile(byte[] byteArray) {
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg";
+        try {
+            File mFile = new File(ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp);
+            mFile.createNewFile();
+            OutputStream out = new FileOutputStream(mFile);
+            out.write(byteArray);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -1,12 +1,11 @@
 package capstone.dots;
 
-import android.app.Activity;
-import android.app.FragmentManager;
+import android.app.Fragment;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-import com.scanlibrary.ProgressDialogFragment;
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -47,16 +46,16 @@ public class PreprocessingFragment extends Fragment {
     private Mat mat_processed;
     private ArrayList<Integer> vLines;
     private ArrayList<Integer> hLines;
-    private ProgressDialogFragment progressDialogFragment;
+    private MaterialDialog dialog;
     private Interface in;
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (!(activity instanceof Interface)) {
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (!(context instanceof Interface)) {
             throw new ClassCastException("Activity must implement Interface");
         }
-        this.in = (Interface) activity;
+        this.in = (Interface) context;
     }
 
     @Override
@@ -80,9 +79,9 @@ public class PreprocessingFragment extends Fragment {
     }
 
     private void init() {
-        outputImage = (ImageView) view.findViewById(R.id.outputImage);
-        cancelButton = (ImageButton) view.findViewById(R.id.cancelButton);
-        proceedButton = (ImageButton) view.findViewById(R.id.proceedButton);
+        outputImage = view.findViewById(R.id.outputImage);
+        cancelButton = view.findViewById(R.id.cancelButton);
+        proceedButton = view.findViewById(R.id.proceedButton);
 
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
@@ -138,6 +137,7 @@ public class PreprocessingFragment extends Fragment {
         });
     }
 
+    /* Rejects result and returns to home screen */
     private View.OnClickListener onClickCancel() {
         return new View.OnClickListener() {
             @Override
@@ -147,6 +147,7 @@ public class PreprocessingFragment extends Fragment {
         };
     }
 
+    /* Accepts result and proceeds to translation */
     private View.OnClickListener onClickProceed() {
         return new View.OnClickListener() {
             @Override
@@ -156,7 +157,7 @@ public class PreprocessingFragment extends Fragment {
         };
     }
 
-    // Displays image on screen
+    /* Displays image on screen */
     private void displayImage(Mat mat) {
         bitmap.recycle();
         bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
@@ -167,7 +168,7 @@ public class PreprocessingFragment extends Fragment {
         outputImage.setImageBitmap(bitmap);
     }
 
-    // Converts colored image to grayscale (1 channel) then binary (black or white)
+    /* Converts colored image to grayscale (1 channel) then binary (black or white) */
     private Mat grayToBW(Mat mat) {
         // Convert mat from RGB color space to graycale
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
@@ -179,7 +180,7 @@ public class PreprocessingFragment extends Fragment {
         return mat;
     }
 
-    // Removes excess noise from binary image
+    /* Removes excess noise from binary image */
     private Mat removeNoise(Mat mat) {
         // Erosion thins the white objects in the image, eliminating small noise
         Imgproc.erode(mat, mat, Imgproc.getStructuringElement(
@@ -188,7 +189,7 @@ public class PreprocessingFragment extends Fragment {
         return mat;
     }
 
-    // Calculates skewness of binary image
+    /* Calculates skewness of binary image */
     private Mat computeSkewAngle(Mat mat) {
         Mat mat_copy = mat.clone();
 
@@ -227,7 +228,7 @@ public class PreprocessingFragment extends Fragment {
         return mat;
     }
 
-    // Deskews binary image
+    /* Deskews binary image */
     private Mat correctSkew(Mat mat, double angle) {
         Mat rot_mat = Imgproc.getRotationMatrix2D(new Point(mat.width() / 2, mat.height() / 2),
                 angle, 1);
@@ -237,7 +238,7 @@ public class PreprocessingFragment extends Fragment {
         return mat;
     }
 
-    // Looks for centroids of white objects in the image
+    /* Looks for centroids of white objects in the image */
     private ArrayList<Point> getCentroids(Mat mat) {
         ArrayList<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
@@ -270,12 +271,12 @@ public class PreprocessingFragment extends Fragment {
         return centroids;
     }
 
-    // Sorts the y-coordinates of centroids
+    /* Sorts the y-coordinates of centroids */
     private void sortCentroidsByY(ArrayList<Point> centroids) {
         Collections.sort(centroids, new PointCompareY());
     }
 
-    // Helper class for sorting y-coordinates of centroids
+    /* Helper class for sorting y-coordinates of centroids */
     private class PointCompareY implements Comparator<Point> {
         @Override
         public int compare(Point a, Point b) {
@@ -285,7 +286,7 @@ public class PreprocessingFragment extends Fragment {
         }
     }
 
-    // Computes average y-coordinates of centroids along the same row
+    /* Computes average y-coordinates of centroids along the same row */
     private ArrayList<Integer> getYCoordinates(ArrayList<Point> centroids) {
         ArrayList<Integer> yCoords = new ArrayList<>();
 
@@ -335,7 +336,7 @@ public class PreprocessingFragment extends Fragment {
         return yCoords;
     }
 
-    // Creates horizontal grid lines
+    /* Creates horizontal grid lines */
     private ArrayList<Integer> createHGridLines(Mat mat, ArrayList<Integer> yCoords) {
         ArrayList<Integer> refinedYCoords = new ArrayList<>();
 
@@ -424,12 +425,12 @@ public class PreprocessingFragment extends Fragment {
         return refinedYCoords;
     }
 
-    // Sorts the x-coordinates of centroids
+    /* Sorts the x-coordinates of centroids */
     private void sortCentroidsByX(List<Point> centroids) {
         Collections.sort(centroids, new PointCompareX());
     }
 
-    // Helper class for sorting x-coordinates of centroids
+    /* Helper class for sorting x-coordinates of centroids */
     private class PointCompareX implements Comparator<Point> {
         @Override
         public int compare(Point a, Point b) {
@@ -439,7 +440,7 @@ public class PreprocessingFragment extends Fragment {
         }
     }
 
-    // Computes average x-coordinates of centroids along the same column
+    /* Computes average x-coordinates of centroids along the same column */
     private ArrayList<Integer> getXCoordinates(ArrayList<Point> centroids) {
         ArrayList<Integer> xCoords = new ArrayList<>();
 
@@ -493,7 +494,7 @@ public class PreprocessingFragment extends Fragment {
         return xCoords;
     }
 
-    // Removes improper vertical grid lines (those too near to another vertical line)
+    /* Removes improper vertical grid lines (those too near to another vertical line) */
     private ArrayList<Integer> removeImproperVLines(ArrayList<Integer> xCoords) {
         ArrayList<Integer> properXCoords = new ArrayList<>();
         int sum = 0;
@@ -582,7 +583,7 @@ public class PreprocessingFragment extends Fragment {
         return properXCoords;
     }
 
-    // Fills up potential vertical grid lines
+    /* Fills up potential vertical grid lines */
     private ArrayList<Integer> createRefinedVLines(Mat mat, ArrayList<Integer> properXCoords) {
         ArrayList<Integer> refinedXCoords = new ArrayList<>();
 
@@ -667,15 +668,18 @@ public class PreprocessingFragment extends Fragment {
         return refinedXCoords;
     }
 
-    // Displays progress dialog box
+    /* Displays progress dialog */
     protected void showProgressDialog(String message) {
-        progressDialogFragment = new ProgressDialogFragment(message);
-        FragmentManager fm = getFragmentManager();
-        progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(message)
+                .progress(true, 0);
+
+        dialog = builder.build();
+        dialog.show();
     }
 
-    // Destroys progress dialog box
+    /* Destroys progress dialog */
     protected void dismissDialog() {
-        progressDialogFragment.dismissAllowingStateLoss();
+        dialog.dismiss();
     }
 }

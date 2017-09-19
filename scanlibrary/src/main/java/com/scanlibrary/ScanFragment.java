@@ -20,6 +20,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class ScanFragment extends Fragment {
     private FrameLayout sourceFrame;
     private PolygonView polygonView;
     private View view;
-    private ProgressDialogFragment progressDialogFragment;
+    private MaterialDialog dialog;
     private IScanner scanner;
     private Bitmap original;
 
@@ -300,13 +302,18 @@ public class ScanFragment extends Fragment {
         }
     }
 
+    /* Displays progress dialog */
     protected void showProgressDialog(String message) {
-        progressDialogFragment = new ProgressDialogFragment(message);
-        FragmentManager fm = getFragmentManager();
-        progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(message)
+                .progress(true, 0);
+
+        dialog = builder.build();
+        dialog.show();
     }
 
+    /* Destroys progress dialog */
     protected void dismissDialog() {
-        progressDialogFragment.dismissAllowingStateLoss();
+        dialog.dismiss();
     }
 }
