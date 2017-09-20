@@ -30,7 +30,7 @@
                 android:padding="@dimen/button_padding"
                 android:src="@mipmap/ic_help"
                 android:scaleType="centerInside"
-                android:background="@null"/>
+                android:background="?selectableItemBackgroundBorderless"/>
         </RelativeLayout>
     </android.support.design.widget.AppBarLayout>
     <android.support.v4.view.ViewPager

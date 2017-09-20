@@ -8,4 +8,5 @@
     <color name="polygonViewCircleBackground">#90e5f8ff</color>
     <color name="colorPrimary">#434343</color>
     <color name="colorPrimaryDark">#393939</color>
+    <color name="colorAccent">#FFFFFF</color>
 </resources>

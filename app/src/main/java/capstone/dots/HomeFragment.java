@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import com.andexert.library.RippleView;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
@@ -19,8 +20,8 @@ import com.scanlibrary.ScanConstants;
 
 public class HomeFragment extends Fragment {
     private View view;
-    private ImageButton camera_button;
-    private ImageButton gallery_button;
+    private RippleView camera_button;
+    private RippleView gallery_button;
 
     private static final int REQUEST_CODE = 99;
 
@@ -35,18 +36,18 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        camera_button = (ImageButton) view.findViewById(R.id.camera_button);
-        gallery_button = (ImageButton) view.findViewById(R.id.gallery_button);
+        camera_button = view.findViewById(R.id.camera_button);
+        gallery_button = view.findViewById(R.id.gallery_button);
 
-        camera_button.setOnClickListener(onClickCamera());
-        gallery_button.setOnClickListener(onClickGallery());
+        camera_button.setOnRippleCompleteListener(onClickCamera());
+        gallery_button.setOnRippleCompleteListener(onClickGallery());
     }
 
     /* Opens the camera */
-    private View.OnClickListener onClickCamera() {
-        return new View.OnClickListener() {
+    private RippleView.OnRippleCompleteListener onClickCamera() {
+        return new RippleView.OnRippleCompleteListener() {
             @Override
-            public void onClick(View view) {
+            public void onComplete(RippleView rippleView) {
                 Intent intent = new Intent(getActivity(), CameraActivity.class);
                 startActivity(intent);
             }
@@ -54,10 +55,10 @@ public class HomeFragment extends Fragment {
     }
 
     /* Opens the gallery */
-    private View.OnClickListener onClickGallery() {
-        return new View.OnClickListener() {
+    private RippleView.OnRippleCompleteListener onClickGallery() {
+        return new RippleView.OnRippleCompleteListener() {
             @Override
-            public void onClick(View view) {
+            public void onComplete(RippleView rippleView) {
                 Intent intent = new Intent(getActivity(), ScanActivity.class);
                 intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_MEDIA);
                 startActivityForResult(intent, REQUEST_CODE);

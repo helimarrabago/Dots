@@ -274,10 +274,10 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
-        acceleration = (TextView) findViewById(R.id.acceleration);
+        acceleration = findViewById(R.id.acceleration);
 
-        mTextureView = (AutoFitTextureView) findViewById(R.id.texture);
-        mStillImageButton = (ImageButton) findViewById(R.id.capture);
+        mTextureView = findViewById(R.id.texture);
+        mStillImageButton = findViewById(R.id.capture);
         mStillImageButton.setOnClickListener(onClickCapture());
     }
 
@@ -287,7 +287,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
             public void onClick(View view) {
                 createImageFileName();
                 takePicture();
-                //sendImage();
+                sendImage();
             }
         };
     }
@@ -295,8 +295,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private void sendImage() {
         Intent intent = new Intent(this, ScanActivity.class);
 
-        Uri mFileUri = FileProvider.getUriForFile(getApplicationContext(),
-                "capstone.dots.provider", mFile);
+        Uri mFileUri = FileProvider.getUriForFile(
+                getApplicationContext(), "capstone.dots.provider", mFile);
         Bitmap mBitmap = getBitmap(mFileUri);
         if (mBitmap != null) {
             Uri mBitmapUri = postImagePick(mBitmap);

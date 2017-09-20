@@ -4,26 +4,34 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
-    <RelativeLayout
+    <android.support.design.widget.AppBarLayout
         android:id="@+id/blockTop"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bar_height"
-        android:gravity="center_vertical"
-        android:background="@color/colorPrimary">
-        <ImageButton
-            android:id="@+id/backButton"
-            android:layout_width="@dimen/button_hw"
-            android:layout_height="@dimen/button_hw"
-            android:padding="@dimen/button_padding"
-            android:background="@null"
-            android:scaleType="centerInside"
-            android:src="@mipmap/ic_back"/>
-    </RelativeLayout>
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bar_height"
+            android:gravity="center_vertical"
+            android:background="@color/colorPrimary">
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="@dimen/button_hw"
+                android:layout_height="@dimen/button_hw"
+                android:padding="@dimen/button_padding"
+                android:background="?selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_back"/>
+        </RelativeLayout>
+    </android.support.design.widget.AppBarLayout>
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:layout_below="@+id/blockTop"/>
     <ScrollView
         android:layout_width="match_parent"

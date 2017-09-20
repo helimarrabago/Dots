@@ -34,31 +34,36 @@
             </FrameLayout>
         </FrameLayout>
     </LinearLayout>
-    <LinearLayout
+    <android.support.design.widget.AppBarLayout
         android:id="@+id/blockBottom"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bar_height"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:gravity="center_vertical"
-        android:background="@color/colorPrimary"
-        android:orientation="horizontal">
-        <ImageButton
-            android:id="@+id/cancelButton"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/button_hw"
-            android:layout_weight="1"
-            android:padding="@dimen/button_padding"
-            android:background="@null"
-            android:scaleType="centerInside"
-            android:src="@mipmap/ic_cancel"/>
-        <ImageButton
-            android:id="@+id/proceedButton"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/button_hw"
-            android:layout_weight="1"
-            android:padding="@dimen/button_padding"
-            android:background="@null"
-            android:scaleType="centerInside"
-            android:src="@mipmap/ic_proceed"/>
-    </LinearLayout>
+        android:theme="@style/AppTheme.AppBarOverlay">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bar_height"
+            android:gravity="center_vertical"
+            android:background="@color/colorPrimary"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/cancelButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/button_hw"
+                android:layout_weight="1"
+                android:padding="@dimen/button_padding"
+                android:background="?selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_cancel"/>
+            <ImageButton
+                android:id="@+id/proceedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/button_hw"
+                android:layout_weight="1"
+                android:padding="@dimen/button_padding"
+                android:background="?selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_proceed"/>
+        </LinearLayout>
+    </android.support.design.widget.AppBarLayout>
 </RelativeLayout>

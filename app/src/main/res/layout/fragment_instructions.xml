@@ -26,7 +26,7 @@
                 android:id="@+id/cameraIcon"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:padding="10dp"
+                android:padding="15dp"
                 android:src="@mipmap/ic_camera"
                 android:scaleType="centerInside"
                 android:background="@drawable/circular_button_dark"/>
@@ -51,7 +51,7 @@
                 android:id="@+id/galleryIcon"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:padding="10dp"
+                android:padding="15dp"
                 android:src="@mipmap/ic_gallery"
                 android:scaleType="centerInside"
                 android:background="@drawable/circular_button_dark"/>
