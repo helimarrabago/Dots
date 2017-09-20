@@ -11,33 +11,27 @@
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/appbar_padding_top"
         android:theme="@style/AppTheme.AppBarOverlay">
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
             <android.support.design.widget.TabLayout
                 android:id="@+id/tabs"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="9"
-                app:tabMaxWidth="0dp"
-                app:tabGravity="fill"
-                app:tabMode="fixed"/>
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bar_height"
+                android:layout_toStartOf="@+id/help_button"
+                android:layout_weight="9"/>
             <ImageButton
                 android:id="@+id/help_button"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="5dp"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
+                android:layout_width="@dimen/button_hw"
+                android:layout_height="@dimen/button_hw"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:padding="@dimen/button_padding"
                 android:src="@mipmap/ic_help"
                 android:scaleType="centerInside"
                 android:background="@null"/>
-        </LinearLayout>
+        </RelativeLayout>
     </android.support.design.widget.AppBarLayout>
     <android.support.v4.view.ViewPager
         android:id="@+id/container"

@@ -7,16 +7,14 @@
     <RelativeLayout
         android:id="@+id/blockTop"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/colorPrimary"
-        android:orientation="horizontal">
+        android:layout_height="@dimen/bar_height"
+        android:gravity="center_vertical"
+        android:background="@color/colorPrimary">
         <ImageButton
             android:id="@+id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="5dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
+            android:layout_width="@dimen/button_hw"
+            android:layout_height="@dimen/button_hw"
+            android:padding="@dimen/button_padding"
             android:background="@null"
             android:scaleType="centerInside"
             android:src="@mipmap/ic_back"/>

@@ -9,7 +9,6 @@ import android.os.Bundle;
 
 @SuppressLint("ValidFragment")
 public class SingleButtonDialogFragment extends DialogFragment {
-
     protected int positiveButtonTitle;
     protected String message;
     protected String title;
@@ -22,7 +21,6 @@ public class SingleButtonDialogFragment extends DialogFragment {
         this.title = title;
         this.isCancelable = isCancelable;
     }
-
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

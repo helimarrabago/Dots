@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,7 +21,6 @@ import java.util.Map;
  * Created by jhansi on 28/03/15.
  */
 public class PolygonView extends FrameLayout {
-
     protected Context context;
     private Paint paint;
     private ImageView pointer1;
@@ -151,10 +151,22 @@ public class PolygonView extends FrameLayout {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
-        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2), pointer1.getY() + (pointer1.getHeight() / 2), pointer3.getX() + (pointer3.getWidth() / 2), pointer3.getY() + (pointer3.getHeight() / 2), paint);
-        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2), pointer1.getY() + (pointer1.getHeight() / 2), pointer2.getX() + (pointer2.getWidth() / 2), pointer2.getY() + (pointer2.getHeight() / 2), paint);
-        canvas.drawLine(pointer2.getX() + (pointer2.getWidth() / 2), pointer2.getY() + (pointer2.getHeight() / 2), pointer4.getX() + (pointer4.getWidth() / 2), pointer4.getY() + (pointer4.getHeight() / 2), paint);
-        canvas.drawLine(pointer3.getX() + (pointer3.getWidth() / 2), pointer3.getY() + (pointer3.getHeight() / 2), pointer4.getX() + (pointer4.getWidth() / 2), pointer4.getY() + (pointer4.getHeight() / 2), paint);
+        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2),
+                pointer1.getY() + (pointer1.getHeight() / 2),
+                pointer3.getX() + (pointer3.getWidth() / 2),
+                pointer3.getY() + (pointer3.getHeight() / 2), paint);
+        canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2),
+                pointer1.getY() + (pointer1.getHeight() / 2),
+                pointer2.getX() + (pointer2.getWidth() / 2),
+                pointer2.getY() + (pointer2.getHeight() / 2), paint);
+        canvas.drawLine(pointer2.getX() + (pointer2.getWidth() / 2),
+                pointer2.getY() + (pointer2.getHeight() / 2),
+                pointer4.getX() + (pointer4.getWidth() / 2),
+                pointer4.getY() + (pointer4.getHeight() / 2), paint);
+        canvas.drawLine(pointer3.getX() + (pointer3.getWidth() / 2),
+                pointer3.getY() + (pointer3.getHeight() / 2),
+                pointer4.getX() + (pointer4.getWidth() / 2),
+                pointer4.getY() + (pointer4.getHeight() / 2), paint);
         midPointer13.setX(pointer3.getX() - ((pointer3.getX() - pointer1.getX()) / 2));
         midPointer13.setY(pointer3.getY() - ((pointer3.getY() - pointer1.getY()) / 2));
         midPointer24.setX(pointer4.getX() - ((pointer4.getX() - pointer2.getX()) / 2));
@@ -167,7 +179,8 @@ public class PolygonView extends FrameLayout {
 
     private ImageView getImageView(int x, int y) {
         ImageView imageView = new ImageView(context);
-        LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LayoutParams layoutParams = new LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         imageView.setLayoutParams(layoutParams);
         imageView.setImageResource(R.drawable.circle);
         imageView.setX(x);
@@ -177,7 +190,6 @@ public class PolygonView extends FrameLayout {
     }
 
     private class MidPointTouchListenerImpl implements OnTouchListener {
-
         PointF DownPT = new PointF(); // Record Mouse Position When Pressed Down
         PointF StartPT = new PointF(); // Record Start Position of 'img'
 
@@ -196,24 +208,29 @@ public class PolygonView extends FrameLayout {
                 case MotionEvent.ACTION_MOVE:
                     PointF mv = new PointF(event.getX() - DownPT.x, event.getY() - DownPT.y);
 
-                    if (Math.abs(mainPointer1.getX() - mainPointer2.getX()) > Math.abs(mainPointer1.getY() - mainPointer2.getY())) {
-                        if (((mainPointer2.getY() + mv.y + v.getHeight() < polygonView.getHeight()) && (mainPointer2.getY() + mv.y > 0))) {
+                    if (Math.abs(mainPointer1.getX() - mainPointer2.getX()) >
+                            Math.abs(mainPointer1.getY() - mainPointer2.getY())) {
+                        if (((mainPointer2.getY() + mv.y + v.getHeight() <
+                                polygonView.getHeight()) && (mainPointer2.getY() + mv.y > 0))) {
                             v.setX((int) (StartPT.y + mv.y));
                             StartPT = new PointF(v.getX(), v.getY());
                             mainPointer2.setY((int) (mainPointer2.getY() + mv.y));
                         }
-                        if (((mainPointer1.getY() + mv.y + v.getHeight() < polygonView.getHeight()) && (mainPointer1.getY() + mv.y > 0))) {
+                        if (((mainPointer1.getY() + mv.y + v.getHeight() <
+                                polygonView.getHeight()) && (mainPointer1.getY() + mv.y > 0))) {
                             v.setX((int) (StartPT.y + mv.y));
                             StartPT = new PointF(v.getX(), v.getY());
                             mainPointer1.setY((int) (mainPointer1.getY() + mv.y));
                         }
                     } else {
-                        if ((mainPointer2.getX() + mv.x + v.getWidth() < polygonView.getWidth()) && (mainPointer2.getX() + mv.x > 0)) {
+                        if ((mainPointer2.getX() + mv.x + v.getWidth() <
+                                polygonView.getWidth()) && (mainPointer2.getX() + mv.x > 0)) {
                             v.setX((int) (StartPT.x + mv.x));
                             StartPT = new PointF(v.getX(), v.getY());
                             mainPointer2.setX((int) (mainPointer2.getX() + mv.x));
                         }
-                        if ((mainPointer1.getX() + mv.x + v.getWidth() < polygonView.getWidth()) && (mainPointer1.getX() + mv.x > 0)) {
+                        if ((mainPointer1.getX() + mv.x + v.getWidth() <
+                                polygonView.getWidth()) && (mainPointer1.getX() + mv.x > 0)) {
                             v.setX((int) (StartPT.x + mv.x));
                             StartPT = new PointF(v.getX(), v.getY());
                             mainPointer1.setX((int) (mainPointer1.getX() + mv.x));
@@ -229,9 +246,9 @@ public class PolygonView extends FrameLayout {
                 case MotionEvent.ACTION_UP:
                     int color = 0;
                     if (isValidShape(getPoints())) {
-                        color = getResources().getColor(R.color.blue);
+                        color = ContextCompat.getColor(context, R.color.blue);
                     } else {
-                        color = getResources().getColor(R.color.red);
+                        color = ContextCompat.getColor(context, R.color.red);
                     }
                     paint.setColor(color);
                     break;
@@ -263,7 +280,9 @@ public class PolygonView extends FrameLayout {
             switch (eid) {
                 case MotionEvent.ACTION_MOVE:
                     PointF mv = new PointF(event.getX() - DownPT.x, event.getY() - DownPT.y);
-                    if (((StartPT.x + mv.x + v.getWidth()) < polygonView.getWidth() && (StartPT.y + mv.y + v.getHeight() < polygonView.getHeight())) && ((StartPT.x + mv.x) > 0 && StartPT.y + mv.y > 0)) {
+                    if (((StartPT.x + mv.x + v.getWidth()) < polygonView.getWidth() &&
+                            (StartPT.y + mv.y + v.getHeight() < polygonView.getHeight())) &&
+                            ((StartPT.x + mv.x) > 0 && StartPT.y + mv.y > 0)) {
                         v.setX((int) (StartPT.x + mv.x));
                         v.setY((int) (StartPT.y + mv.y));
                         StartPT = new PointF(v.getX(), v.getY());
@@ -277,9 +296,9 @@ public class PolygonView extends FrameLayout {
                 case MotionEvent.ACTION_UP:
                     int color = 0;
                     if (isValidShape(getPoints())) {
-                        color = getResources().getColor(R.color.blue);
+                        color = ContextCompat.getColor(context, R.color.blue);
                     } else {
-                        color = getResources().getColor(R.color.red);
+                        color = ContextCompat.getColor(context, R.color.red);
                     }
                     paint.setColor(color);
                     break;

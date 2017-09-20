@@ -33,7 +33,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:src="@mipmap/ic_camera"
-        android:background="@drawable/circular_button"
+        android:background="@drawable/circular_button_blue"
         android:scaleType="centerInside"
         android:layout_marginBottom="20dp"/>
 </RelativeLayout>

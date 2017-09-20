@@ -6,55 +6,56 @@
     <TextView
         android:id="@+id/caption"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/bar_height"
         android:background="@color/colorPrimary"
         android:fontFamily="sans-serif-light"
         android:textSize="16sp"
-        android:paddingLeft="20dp"
+        android:paddingStart="20dp"
         android:gravity="center_vertical"
         android:text="@string/cropping"
         android:textColor="@android:color/white"/>
     <LinearLayout
         android:id="@+id/buttons"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/bar_height"
         android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
         android:background="@color/colorPrimary"
         android:orientation="horizontal">
         <ImageButton
             android:id="@+id/cancelButton"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="@dimen/button_hw"
             android:layout_weight="1"
             android:background="@null"
-            android:padding="@dimen/bottom_bar_padding"
+            android:padding="@dimen/button_padding"
             android:scaleType="centerInside"
             android:src="@mipmap/ic_cancel"/>
         <ImageButton
             android:id="@+id/rotLeftButton"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="@dimen/button_hw"
             android:layout_weight="1"
             android:background="@null"
-            android:padding="@dimen/bottom_bar_padding"
+            android:padding="@dimen/button_padding"
             android:scaleType="centerInside"
             android:src="@mipmap/ic_left"/>
         <ImageButton
             android:id="@+id/rotRightButton"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="@dimen/button_hw"
             android:layout_weight="1"
             android:background="@null"
-            android:padding="@dimen/bottom_bar_padding"
+            android:padding="@dimen/button_padding"
             android:scaleType="centerInside"
             android:src="@mipmap/ic_right"/>
         <ImageButton
             android:id="@+id/proceedButton"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="@dimen/button_hw"
             android:layout_weight="1"
             android:background="@null"
-            android:padding="@dimen/bottom_bar_padding"
+            android:padding="@dimen/button_padding"
             android:scaleType="centerInside"
             android:src="@mipmap/ic_proceed"/>
     </LinearLayout>
@@ -64,13 +65,13 @@
         android:layout_above="@id/buttons"
         android:layout_below="@+id/caption"
         android:layout_gravity="center"
-        android:layout_margin="@dimen/scanPadding">
+        android:layout_margin="@dimen/scan_padding">
         <FrameLayout
             android:id="@+id/sourceFrame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_margin="@dimen/scanPadding">
+            android:layout_margin="@dimen/scan_padding">
             <ImageView
                 android:id="@+id/sourceImageView"
                 android:layout_width="wrap_content"

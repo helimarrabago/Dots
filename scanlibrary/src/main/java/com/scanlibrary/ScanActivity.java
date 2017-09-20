@@ -12,16 +12,12 @@ import android.os.Bundle;
  * Created by jhansi on 28/03/15.
  */
 public class ScanActivity extends Activity implements IScanner, ComponentCallbacks2 {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.scan_layout);
 
-        if (getPreferenceContent() == ScanConstants.OPEN_CAMERA) {
-            Uri uri = getIntent().getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
-            onBitmapSelect(uri);
-        } else if (getPreferenceContent() == ScanConstants.OPEN_MEDIA) init();
+        if (getPreferenceContent() == ScanConstants.OPEN_MEDIA) init();
     }
 
     @Override
@@ -54,19 +50,6 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.content, fragment);
         fragmentTransaction.addToBackStack(ScanFragment.class.toString());
-        fragmentTransaction.commit();
-    }
-
-    @Override
-    public void onScanFinish(Uri uri) {
-        ResultFragment fragment = new ResultFragment();
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(ScanConstants.SCANNED_RESULT, uri);
-        fragment.setArguments(bundle);
-        android.app.FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.content, fragment);
-        fragmentTransaction.addToBackStack(ResultFragment.class.toString());
         fragmentTransaction.commit();
     }
 

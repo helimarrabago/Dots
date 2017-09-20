@@ -29,7 +29,7 @@
                 android:padding="10dp"
                 android:src="@mipmap/ic_camera"
                 android:scaleType="centerInside"
-                android:background="@drawable/circular_button"/>
+                android:background="@drawable/circular_button_dark"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
                 android:padding="10dp"
                 android:src="@mipmap/ic_gallery"
                 android:scaleType="centerInside"
-                android:background="@drawable/circular_button"/>
+                android:background="@drawable/circular_button_dark"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

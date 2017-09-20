@@ -19,7 +19,7 @@
             android:layout_width="130dp"
             android:layout_height="130dp"
             android:layout_marginBottom="5dp"
-            android:background="@drawable/circular_button"
+            android:background="@drawable/circular_button_dark"
             android:src="@mipmap/ic_camera"/>
         <TextView
             android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
             android:layout_width="130dp"
             android:layout_height="130dp"
             android:layout_marginBottom="5dp"
-            android:background="@drawable/circular_button"
+            android:background="@drawable/circular_button_dark"
             android:src="@mipmap/ic_gallery"/>
         <TextView
             android:layout_width="wrap_content"

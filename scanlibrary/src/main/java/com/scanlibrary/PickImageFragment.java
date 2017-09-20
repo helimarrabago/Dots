@@ -2,6 +2,7 @@ package com.scanlibrary;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -21,16 +22,15 @@ import java.util.Date;
  * Created by jhansi on 04/04/15.
  */
 public class PickImageFragment extends Fragment {
-    private Uri fileUri;
     private IScanner scanner;
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (!(activity instanceof IScanner)) {
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (!(context instanceof IScanner)) {
             throw new ClassCastException("Activity must implement IScanner");
         }
-        this.scanner = (IScanner) activity;
+        this.scanner = (IScanner) context;
     }
 
     @Override
@@ -42,40 +42,15 @@ public class PickImageFragment extends Fragment {
 
     private void init() {
         if (isIntentPreferenceSet()) {
-            handleIntentPreference();
+            openMediaContent();
         } else {
             getActivity().finish();
-        }
-    }
-
-    private void clearTempImages() {
-        try {
-            File tempFolder = new File(ScanConstants.IMAGE_PATH);
-            for (File f : tempFolder.listFiles())
-                f.delete();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void handleIntentPreference() {
-        int preference = getIntentPreference();
-
-        if (preference == ScanConstants.OPEN_CAMERA) {
-            //openCamera();
-        } else if (preference == ScanConstants.OPEN_MEDIA) {
-            openMediaContent();
         }
     }
 
     private boolean isIntentPreferenceSet() {
         int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
         return preference != 0;
-    }
-
-    private int getIntentPreference() {
-        int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
-        return preference;
     }
 
     public void openMediaContent() {
@@ -85,37 +60,15 @@ public class PickImageFragment extends Fragment {
         startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
     }
 
-    /*public void openCamera() {
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = createImageFile();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Uri tempFileUri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
-                    "com.scanlibrary.provider", // As defined in Manifest
-                    file);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
-        } else {
-            Uri tempFileUri = Uri.fromFile(file);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempFileUri);
-        }
-        startActivityForResult(cameraIntent, ScanConstants.START_CAMERA_REQUEST_CODE);
-    }*/
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap bitmap = null;
         if (resultCode == Activity.RESULT_OK) {
             try {
-                switch (requestCode) {
-                    case ScanConstants.START_CAMERA_REQUEST_CODE:
-                        bitmap = getBitmap(fileUri);
-
-                        break;
-                    case ScanConstants.PICKFILE_REQUEST_CODE:
-                        bitmap = getBitmap(data.getData());
-                        byte[] byteArray = getBitmapAsByteArray(bitmap);
-                        createImageFile(byteArray);
-
-                        break;
+                if (requestCode == ScanConstants.PICKFILE_REQUEST_CODE) {
+                    bitmap = getBitmap(data.getData());
+                    byte[] byteArray = getBitmapAsByteArray(bitmap);
+                    createImageFile(byteArray);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -130,7 +83,7 @@ public class PickImageFragment extends Fragment {
 
     private byte[] getBitmapAsByteArray(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
     }
 

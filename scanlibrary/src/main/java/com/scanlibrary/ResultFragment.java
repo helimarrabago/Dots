@@ -15,18 +15,7 @@ import java.io.IOException;
  * Created by jhansi on 29/03/15.
  */
 public class ResultFragment extends Fragment {
-
-    // Commented out since this fragment does not need a UI
-    //private View view;
-    //private ImageView scannedImageView;
-    //private Button doneButton;
     private Bitmap original;
-    //private Button originalButton;
-    //private Button MagicColorButton;
-    //private Button grayModeButton;
-    //private Button bwButton;
-    //private Bitmap transformed;
-    private static ProgressDialogFragment progressDialogFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,30 +24,10 @@ public class ResultFragment extends Fragment {
         init();
     }
 
-    /*@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.result_layout, null);
-        init();
-        return view;
-    }*/
-
     private void init() {
         Bitmap bitmap = getBitmap();
 
         done();
-        /*scannedImageView = (ImageView) view.findViewById(R.id.scannedImage);
-        originalButton = (Button) view.findViewById(R.id.original);
-        originalButton.setOnClickListener(new OriginalButtonClickListener());
-        MagicColorButton = (Button) view.findViewById(R.id.magicColor);
-        MagicColorButton.setOnClickListener(new MagicColorButtonClickListener());
-        grayModeButton = (Button) view.findViewById(R.id.grayMode);
-        grayModeButton.setOnClickListener(new GrayButtonClickListener());
-        bwButton = (Button) view.findViewById(R.id.BWMode);
-        bwButton.setOnClickListener(new BWButtonClickListener());
-        Bitmap bitmap = getBitmap();
-        setScannedImage(bitmap);
-        doneButton = (Button) view.findViewById(R.id.doneButton);
-        doneButton.setOnClickListener(new DoneButtonClickListener());*/
     }
 
     private Bitmap getBitmap() {
@@ -74,8 +43,7 @@ public class ResultFragment extends Fragment {
     }
 
     private Uri getUri() {
-        Uri uri = getArguments().getParcelable(ScanConstants.SCANNED_RESULT);
-        return uri;
+        return getArguments().getParcelable(ScanConstants.SCANNED_RESULT);
     }
 
     private void done() {

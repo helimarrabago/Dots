@@ -3,6 +3,7 @@ package com.scanlibrary;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
@@ -11,7 +12,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,54 +30,41 @@ import java.util.Map;
  * Created by jhansi on 29/03/15.
  */
 public class ScanFragment extends Fragment {
-
-    // Changed name for better context
     private ImageButton proceedButton;
     private ImageButton cancelButton;
-    // Added for rotation feature
     private ImageButton rotLeftButton;
     private ImageButton rotRightButton;
-    // End
     private ImageView sourceImageView;
     private FrameLayout sourceFrame;
     private PolygonView polygonView;
     private View view;
     private MaterialDialog dialog;
-    private IScanner scanner;
     private Bitmap original;
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (!(activity instanceof IScanner)) {
-            throw new ClassCastException("Activity must implement IScanner");
-        }
-        this.scanner = (IScanner) activity;
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.scan_fragment_layout, null);
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.scan_fragment_layout, container, false);
         init();
+
         return view;
     }
 
-    public ScanFragment() {
-
-    }
-
     private void init() {
-        sourceImageView = (ImageView) view.findViewById(R.id.sourceImageView);
-        cancelButton = (ImageButton) view.findViewById(R.id.cancelButton);
+        sourceImageView = view.findViewById(R.id.sourceImageView);
+        cancelButton = view.findViewById(R.id.cancelButton);
+        proceedButton = view.findViewById(R.id.proceedButton);
+        rotRightButton = view.findViewById(R.id.rotRightButton);
+        rotLeftButton = view.findViewById(R.id.rotLeftButton);
+        sourceFrame = view.findViewById(R.id.sourceFrame);
+        polygonView = view.findViewById(R.id.polygonView);
+
         cancelButton.setOnClickListener(onClickCancel());
-        proceedButton = (ImageButton) view.findViewById(R.id.proceedButton);
         proceedButton.setOnClickListener(onClickProceed());
-        rotRightButton = (ImageButton) view.findViewById(R.id.rotRightButton);
         rotRightButton.setOnClickListener(onClickRotRight());
-        rotLeftButton = (ImageButton) view.findViewById(R.id.rotLeftButton);
         rotLeftButton.setOnClickListener(onClickRotLeft());
-        sourceFrame = (FrameLayout) view.findViewById(R.id.sourceFrame);
-        polygonView = (PolygonView) view.findViewById(R.id.polygonView);
+
         sourceFrame.post(new Runnable() {
             @Override
             public void run() {
@@ -175,50 +162,23 @@ public class ScanFragment extends Fragment {
     }
 
     private Uri getUri() {
-        Uri uri = getArguments().getParcelable(ScanConstants.SELECTED_BITMAP);
-        return uri;
+        return getArguments().getParcelable(ScanConstants.SELECTED_BITMAP);
     }
 
     private void setBitmap(Bitmap original) {
-        Bitmap scaledBitmap = scaledBitmap(original, sourceFrame.getWidth(), sourceFrame.getHeight());
+        Bitmap scaledBitmap = scaledBitmap(
+                original, sourceFrame.getWidth(), sourceFrame.getHeight());
         sourceImageView.setImageBitmap(scaledBitmap);
         Bitmap tempBitmap = ((BitmapDrawable) sourceImageView.getDrawable()).getBitmap();
         Map<Integer, PointF> pointFs = getOutlinePoints(tempBitmap);
         polygonView.setPoints(pointFs);
         polygonView.setVisibility(View.VISIBLE);
-        int padding = (int) getResources().getDimension(R.dimen.scanPadding);
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
+        int padding = (int) getResources().getDimension(R.dimen.scan_padding);
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                tempBitmap.getWidth() + 2 * padding, tempBitmap.getHeight() + 2 * padding);
         layoutParams.gravity = Gravity.CENTER;
         polygonView.setLayoutParams(layoutParams);
     }
-
-    // Commented out since algorithm does not work well; resorted to just initializing the crop
-    // boundary to the border of the image (getOutlinePoints)
-    /*private Map<Integer, PointF> getEdgePoints(Bitmap tempBitmap) {
-        List<PointF> pointFs = getContourEdgePoints(tempBitmap);
-        Map<Integer, PointF> orderedPoints = orderedValidEdgePoints(tempBitmap, pointFs);
-        return orderedPoints;
-    }
-
-    private List<PointF> getContourEdgePoints(Bitmap tempBitmap) {
-        float[] points = ((ScanActivity) getActivity()).getPoints(tempBitmap);
-        float x1 = points[0];
-        float x2 = points[1];
-        float x3 = points[2];
-        float x4 = points[3];
-
-        float y1 = points[4];
-        float y2 = points[5];
-        float y3 = points[6];
-        float y4 = points[7];
-
-        List<PointF> pointFs = new ArrayList<>();
-        pointFs.add(new PointF(x1, y1));
-        pointFs.add(new PointF(x2, y2));
-        pointFs.add(new PointF(x3, y3));
-        pointFs.add(new PointF(x4, y4));
-        return pointFs;
-    }*/
 
     private Map<Integer, PointF> getOutlinePoints(Bitmap tempBitmap) {
         Map<Integer, PointF> outlinePoints = new HashMap<>();
@@ -229,16 +189,9 @@ public class ScanFragment extends Fragment {
         return outlinePoints;
     }
 
-    /*private Map<Integer, PointF> orderedValidEdgePoints(Bitmap tempBitmap, List<PointF> pointFs) {
-        Map<Integer, PointF> orderedPoints = polygonView.getOrderedPoints(pointFs);
-        if (!polygonView.isValidShape(orderedPoints)) {
-            orderedPoints = getOutlinePoints(tempBitmap);
-        }
-        return orderedPoints;
-    }*/
-
     private void showErrorDialog() {
-        SingleButtonDialogFragment fragment = new SingleButtonDialogFragment(R.string.ok, getString(R.string.cantCrop), "Error", true);
+        SingleButtonDialogFragment fragment = new SingleButtonDialogFragment(
+                R.string.ok, getString(R.string.cantCrop), "Error", true);
         FragmentManager fm = getActivity().getFragmentManager();
         fragment.show(fm, SingleButtonDialogFragment.class.toString());
     }
@@ -249,13 +202,12 @@ public class ScanFragment extends Fragment {
 
     private Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
         Matrix m = new Matrix();
-        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()), new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
+        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()),
+                new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
     private Bitmap getScannedBitmap(Bitmap original, Map<Integer, PointF> points) {
-        int width = original.getWidth();
-        int height = original.getHeight();
         float xRatio = (float) original.getWidth() / sourceImageView.getWidth();
         float yRatio = (float) original.getHeight() / sourceImageView.getHeight();
 
@@ -267,13 +219,12 @@ public class ScanFragment extends Fragment {
         float y2 = (points.get(1).y) * yRatio;
         float y3 = (points.get(2).y) * yRatio;
         float y4 = (points.get(3).y) * yRatio;
-        Log.i("", "Points(" + x1 + "," + y1 + ")(" + x2 + "," + y2 + ")(" + x3 + "," + y3 + ")(" + x4 + "," + y4 + ")");
-        Bitmap _bitmap = ((ScanActivity) getActivity()).getScannedBitmap(original, x1, y1, x2, y2, x3, y3, x4, y4);
-        return _bitmap;
+
+        return ((ScanActivity) getActivity()).getScannedBitmap(
+                original, x1, y1, x2, y2, x3, y3, x4, y4);
     }
 
     private class ScanAsyncTask extends AsyncTask<Void, Void, Bitmap> {
-
         private Map<Integer, PointF> points;
 
         private ScanAsyncTask(Map<Integer, PointF> points) {
@@ -288,9 +239,9 @@ public class ScanFragment extends Fragment {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            Bitmap bitmap =  getScannedBitmap(original, points);
+            Bitmap bitmap = getScannedBitmap(original, points);
             Uri uri = Utils.getUri(getActivity(), bitmap);
-            scanner.onScanFinish(uri);
+            onScanFinish(uri);
             return bitmap;
         }
 
@@ -300,6 +251,20 @@ public class ScanFragment extends Fragment {
             bitmap.recycle();
             dismissDialog();
         }
+    }
+
+    private void onScanFinish(Uri uri) {
+        Intent data = new Intent();
+        data.putExtra(ScanConstants.SCANNED_RESULT, uri);
+        getActivity().setResult(Activity.RESULT_OK, data);
+        original.recycle();
+        System.gc();
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().finish();
+            }
+        });
     }
 
     /* Displays progress dialog */
