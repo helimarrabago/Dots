@@ -47,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        init();
+    }
+
+    private void init() {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -54,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            int fragment = intent.getIntExtra("fragment", 0);
+            mViewPager.setCurrentItem(fragment);
+        }
 
         helpButton = findViewById(R.id.help_button);
         helpButton.setOnClickListener(onClickHelp());

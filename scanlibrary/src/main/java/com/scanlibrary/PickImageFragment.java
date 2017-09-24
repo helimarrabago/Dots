@@ -90,11 +90,13 @@ public class PickImageFragment extends Fragment {
 
     private void createImageFile(byte[] byteArray) {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        System.out.println(timestamp);
+        ((Filename) this.getActivity().getApplication()).setGlobalFilename(timestamp);
         try {
-            File mFile = new File(
+            File file = new File(
                     ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
-            mFile.createNewFile();
-            OutputStream out = new FileOutputStream(mFile);
+            if (!file.exists()) file.createNewFile();
+            OutputStream out = new FileOutputStream(file);
             out.write(byteArray);
             out.close();
         } catch (IOException e) {

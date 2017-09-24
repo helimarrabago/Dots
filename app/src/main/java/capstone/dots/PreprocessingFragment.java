@@ -16,15 +16,12 @@ import android.widget.ImageView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.scanlibrary.ScanActivity;
 
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -132,27 +129,35 @@ public class PreprocessingFragment extends Fragment {
             Utils.bitmapToMat(bitmap, mat);
 
             // Preprocessing
-            mat = grayToBW(mat);
-            mat = removeNoise(mat);
-            mat = computeSkewAngle(mat);
+            try {
+                mat = grayToBW(mat);
+                mat = removeNoise(mat);
+                mat = correctSkew(mat);
+            } catch (Exception e) {
+                return false;
+            }
 
             Bitmap processed = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(mat, processed);
             uri = com.scanlibrary.Utils.getUri(getActivity(), processed);
 
             // Dot detection
-            ArrayList<Point> centroids = getCentroids(mat);
-            sortCentroidsByY(centroids);
-            ArrayList<Integer> hLines = createHLines(centroids);
-            finalHLines = removeDenseHLines(mat, hLines);
-            sortCentroidsByX(centroids);
-            ArrayList<Integer> vLines = createVLines(centroids);
-            ArrayList<Integer> refinedVLines = removeDenseVLines(vLines);
-            finalVLines = fillMissingVLines(mat, refinedVLines);
+            try {
+                ArrayList<Point> centroids = getCentroids(mat);
+                sortCentroidsByY(centroids);
+                ArrayList<Integer> hLines = createHLines(centroids);
+                finalHLines = removeDenseHLines(mat, hLines);
+                sortCentroidsByX(centroids);
+                ArrayList<Integer> vLines = createVLines(centroids);
+                ArrayList<Integer> refinedVLines = removeDenseVLines(vLines);
+                finalVLines = fillMissingVLines(mat, refinedVLines);
+            } catch (Exception e) {
+                return false;
+            }
 
             System.out.println(finalHLines.size() + " " + finalVLines.size());
 
-            if (finalHLines.size() % 3 != 0 || refinedVLines.size() % 2 != 0)
+            if (finalHLines.size() % 3 != 0 || finalVLines.size() % 2 != 0)
                 return false;
 
             // Cell recognition
@@ -223,8 +228,8 @@ public class PreprocessingFragment extends Fragment {
         return mat;
     }
 
-    /* Calculates skewness of binary image */
-    private Mat computeSkewAngle(Mat mat) {
+    /* Corrects skewness of binary image */
+    private Mat correctSkew(Mat mat) {
         Mat mat_copy = mat.clone();
 
         // Dilation widens the white objects in the image
@@ -241,11 +246,8 @@ public class PreprocessingFragment extends Fragment {
 
         double angle = 0.0;
 
-        for(int i = 0; i < lines.height(); i++) {
-            for(int j = 0; j < lines.width(); j++) {
-                //Imgproc.line(mat, new Point(lines.get(i, j)[0], lines.get(i, j)[1]),
-                //new Point(lines.get(i, j)[2], lines.get(i, j)[3]),
-                //new Scalar(255));
+        for (int i = 0; i < lines.height(); i++) {
+            for (int j = 0; j < lines.width(); j++) {
                 angle += Math.atan2(lines.get(i, j)[3] - lines.get(i, j)[1],
                         lines.get(i, j)[2] - lines.get(i, j)[0]);
             }
@@ -257,17 +259,11 @@ public class PreprocessingFragment extends Fragment {
 
         mat_copy.release();
 
-        mat = correctSkew(mat, angle);
-
-        return mat;
-    }
-
-    /* Deskews binary image */
-    private Mat correctSkew(Mat mat, double angle) {
         Mat rot_mat = Imgproc.getRotationMatrix2D(new Point(mat.width() / 2, mat.height() / 2),
                 angle, 1);
-
         Imgproc.warpAffine(mat, mat, rot_mat, mat.size(), Imgproc.INTER_CUBIC);
+
+        rot_mat.release();
 
         return mat;
     }
@@ -810,7 +806,7 @@ public class PreprocessingFragment extends Fragment {
     /* Displays error dialog */
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-                .content(R.string.error)
+                .content(R.string.processingError)
                 .positiveText(R.string.agree)
                 .cancelable(false)
                 .onPositive(onClickPositive());

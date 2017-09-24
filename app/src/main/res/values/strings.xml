@@ -2,7 +2,8 @@
     <string name="app_name">Dots</string>
     <string name="processing">Processing image</string>
     <string name="translate">Translating image</string>
-    <string name="error">An error occurred during processing</string>
+    <string name="processingError">An error occurred during processing</string>
+    <string name="translateError">An error occurred during translation</string>
     <string name="agree">Okay</string>
     <string name="help">Help Me</string>
     <string name="acquire">1 Acquire an image</string>

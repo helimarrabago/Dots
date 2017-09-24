@@ -1,12 +1,12 @@
 package capstone.dots;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
@@ -20,19 +20,26 @@ import android.widget.ImageButton;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.scanlibrary.Filename;
+import com.scanlibrary.ScanConstants;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -46,7 +53,9 @@ public class TranslationFragment extends Fragment {
     private MaterialDialog dialog;
     private ArrayList<Integer> finalHLines;
     private ArrayList<Integer> finalVLines;
+    private ArrayList<String> translation;
     private Bitmap bitmap;
+    private String filename;
     private ArrayList<HashMap<String, String>> files = new ArrayList<>();
 
     @Override
@@ -80,10 +89,15 @@ public class TranslationFragment extends Fragment {
         ImageButton proceedButton = view.findViewById(R.id.proceedButton);
 
         cancelButton.setOnClickListener(onClickCancel());
+        proceedButton.setOnClickListener(onClickProceed());
 
         Uri uri = getArguments().getParcelable("uri");
         finalHLines = getArguments().getIntegerArrayList("finalHLines");
         finalVLines = getArguments().getIntegerArrayList("finalVLines");
+
+        filename = ((Filename) this.getActivity().getApplication()).getGlobalFilename();
+
+        System.out.println(filename);
 
         try {
             // Retrieve bitmap
@@ -103,8 +117,6 @@ public class TranslationFragment extends Fragment {
     }
 
     private class TranslationTask extends AsyncTask<Mat, String, Boolean> {
-        ArrayList<String> translation = new ArrayList<>();
-
         @Override
         protected void onPreExecute() {
             showProgressDialog(getResources().getString(R.string.translate));
@@ -134,11 +146,6 @@ public class TranslationFragment extends Fragment {
         }
     }
 
-    private void notifyError() {
-        dialog.dismiss();
-        showErrorDialog();
-    }
-
     private View.OnClickListener onClickCancel() {
         return new View.OnClickListener() {
             @Override
@@ -148,8 +155,30 @@ public class TranslationFragment extends Fragment {
         };
     }
 
+    private View.OnClickListener onClickProceed() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Translations",
+                        filename + ".srl");
+
+                ObjectOutput out = null;
+                try {
+                    out = new ObjectOutputStream(new FileOutputStream(file));
+                    out.writeObject(translation);
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                intent.putExtra("fragment", 1);
+                startActivity(intent);
+            }
+        };
+    }
+
     private void outputTranslation(ArrayList<String> translation) {
-        System.out.println("Output");
         for (int i = 0; i < translation.size(); i++) {
             if (translation.get(i).contains("NON")) {
                 String[] parts = translation.get(i).split("NON");
@@ -282,7 +311,7 @@ public class TranslationFragment extends Fragment {
                 // Check dot 6
                 bcode += checkDot(mat, mdv, mh2, rgt, bot);
 
-                System.out.println(bcode);
+                //System.out.println(bcode);
 
                 binary.add(bcode);
             }
@@ -343,7 +372,7 @@ public class TranslationFragment extends Fragment {
     }
 
     /* Translate decimal codes to English counterpart */
-    private ArrayList<String> getTranslation(ArrayList<String> decimal) {
+    private ArrayList<String> getTranslation(ArrayList<String> decimal) throws IOException {
         ArrayList<String> translation = new ArrayList<>();
 
         // Translate by segment
@@ -566,10 +595,15 @@ public class TranslationFragment extends Fragment {
         dialog.show();
     }
 
+    private void notifyError() {
+        dialog.dismiss();
+        showErrorDialog();
+    }
+
     /* Displays error dialog */
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-                .content(R.string.error)
+                .content(R.string.translateError)
                 .positiveText(R.string.agree)
                 .cancelable(false)
                 .onPositive(onClickPositive());

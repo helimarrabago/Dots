@@ -49,6 +49,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.scanlibrary.Filename;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 import com.scanlibrary.Utils;
@@ -148,7 +149,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private Handler mBackgroundHandler;
     private ImageReader mImageReader;
     private File mFile;
-    private String mFileName;
 
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
@@ -261,24 +261,21 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         }
     }
 
-    private Sensor accelerometer;
-    private SensorManager sm;
     private TextView acceleration;
-    private ImageButton mStillImageButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        sm = (SensorManager)getSystemService(SENSOR_SERVICE);
-        accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+        Sensor accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         acceleration = findViewById(R.id.acceleration);
 
         mTextureView = findViewById(R.id.texture);
-        mStillImageButton = findViewById(R.id.capture);
+        ImageButton mStillImageButton = findViewById(R.id.capture);
         mStillImageButton.setOnClickListener(onClickCapture());
     }
 
@@ -321,13 +318,15 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private void createImageFileName() {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        System.out.println(timestamp);
+        ((Filename) this.getApplication()).setGlobalFilename(timestamp);
         try {
-            mFile = File.createTempFile(timestamp, ".jpg",
-                                            new File(ScanConstants.IMAGE_PATH, "Images"));
+            mFile = new File(
+                    ScanConstants.IMAGE_PATH + File.separator + "Images",timestamp + ".jpg");
+            if (!mFile.exists()) mFile.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mFileName = mFile.getAbsolutePath();
     }
 
     protected Uri postImagePick(Bitmap bitmap) {
@@ -769,7 +768,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         }
     }
 
-    static class CompareSizesByArea implements Comparator<Size> {
+    private static class CompareSizesByArea implements Comparator<Size> {
         @Override
         public int compare(Size lhs, Size rhs) {
             // We cast here to ensure the multiplications won't overflow
