@@ -9,5 +9,5 @@ import java.util.ArrayList;
  */
 
 public interface Interface {
-    void translateImage(Mat mat, ArrayList<Integer> xCoords, ArrayList<Integer> yCoords);
+    void translateImage(ArrayList<String> decimal);
 }

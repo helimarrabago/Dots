@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by jhansi on 04/04/15.
@@ -88,9 +89,10 @@ public class PickImageFragment extends Fragment {
     }
 
     private void createImageFile(byte[] byteArray) {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg";
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         try {
-            File mFile = new File(ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp);
+            File mFile = new File(
+                    ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
             mFile.createNewFile();
             OutputStream out = new FileOutputStream(mFile);
             out.write(byteArray);
@@ -109,12 +111,9 @@ public class PickImageFragment extends Fragment {
     private Bitmap getBitmap(Uri selectedImg) throws IOException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 3;
-        AssetFileDescriptor fileDescriptor = null;
-        fileDescriptor =
+        AssetFileDescriptor fileDescriptor =
                 getActivity().getContentResolver().openAssetFileDescriptor(selectedImg, "r");
-        Bitmap original
-                = BitmapFactory.decodeFileDescriptor(
+        return BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.getFileDescriptor(), null, options);
-        return original;
     }
 }

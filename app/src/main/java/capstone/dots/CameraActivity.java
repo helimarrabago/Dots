@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -319,7 +320,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     }
 
     private void createImageFileName() {
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         try {
             mFile = File.createTempFile(timestamp, ".jpg",
                                             new File(ScanConstants.IMAGE_PATH, "Images"));

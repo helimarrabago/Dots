@@ -2,16 +2,25 @@
     <string name="app_name">Dots</string>
     <string name="processing">Processing image</string>
     <string name="translate">Translating image</string>
+    <string name="error">An error occurred during processing</string>
+    <string name="agree">Okay</string>
     <string name="help">Help Me</string>
     <string name="acquire">1 Acquire an image</string>
-    <string name="camera">This button allows the user to use the camera in capturing an image of a Braille document.</string>
-    <string name="gallery">This button enables the user to retrieve an image of a Braille document from the gallery.</string>
+    <string name="camera">This button allows the user to use the camera in capturing an image of a
+        Braille document.</string>
+    <string name="gallery">This button enables the user to retrieve an image of a Braille document
+        from the gallery.</string>
     <string name="crop_">2 Crop the acquired image</string>
-    <string name="cropSub">After acquiring an image, the app lets the user to define exactly which area of the image is desired to be translated.</string>
+    <string name="cropSub">After acquiring an image, the app lets the user to define exactly which
+        area of the image is desired to be translated.</string>
     <string name="confirmPre">3 Confirm the preprocessed image</string>
-    <string name="confirmPreSub">Once cropped, the image is subjected to a preprocessing phase to make translation easier. The preprocessed image is displayed after which and the app will ask the user to confirm if it was done properly.</string>
+    <string name="confirmPreSub">Once cropped, the image is subjected to a preprocessing phase to
+        make translation easier. The preprocessed image is displayed after which and the app will
+        ask the user to confirm if it was done properly.</string>
     <string name="confirmTrans">4 Confirm to save translation</string>
-    <string name="confirmTransSub">The translation phase will start post confirmation of the preprocessed image. After then, the app will ask confirmation from the user to save the translation or not.</string>
+    <string name="confirmTransSub">The translation phase will start post confirmation of the
+        preprocessed image. After then, the app will ask confirmation from the user to save the
+        translation or not.</string>
     <string name="letters">Letters</string>
     <string name="numbers">Numbers</string>
     <string name="a">A</string>

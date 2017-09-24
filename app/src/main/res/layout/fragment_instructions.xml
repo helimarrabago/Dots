@@ -47,7 +47,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="15dp"
             android:orientation="horizontal">
-            <ImageButton
+            <ImageView
                 android:id="@+id/galleryIcon"
                 android:layout_width="60dp"
                 android:layout_height="60dp"

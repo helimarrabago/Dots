@@ -268,7 +268,7 @@ public class ScanFragment extends Fragment {
     }
 
     /* Displays progress dialog */
-    protected void showProgressDialog(String message) {
+    private void showProgressDialog(String message) {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
                 .content(message)
                 .progress(true, 0);
@@ -278,7 +278,7 @@ public class ScanFragment extends Fragment {
     }
 
     /* Destroys progress dialog */
-    protected void dismissDialog() {
+    private void dismissDialog() {
         dialog.dismiss();
     }
 }
