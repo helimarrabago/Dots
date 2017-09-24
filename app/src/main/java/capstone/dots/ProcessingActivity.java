@@ -49,10 +49,13 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
     }
 
     @Override
-    public void translateImage(ArrayList<String> decimal) {
+    public void translateImage(Uri uri, ArrayList<Integer> finalHLines,
+                               ArrayList<Integer> finalVLines) {
         TranslationFragment fragment = new TranslationFragment();
         Bundle bundle = new Bundle();
-        bundle.putStringArrayList("decimal", decimal);
+        bundle.putParcelable("uri", uri);
+        bundle.putIntegerArrayList("finalHLines", finalHLines);
+        bundle.putIntegerArrayList("finalVLines", finalVLines);
         fragment.setArguments(bundle);
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

@@ -16,6 +16,7 @@ import android.widget.ImageView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.scanlibrary.ScanActivity;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -44,10 +45,11 @@ public class PreprocessingFragment extends Fragment {
     private View view;
     private ImageView outputImage;
     private Bitmap bitmap;
-    private ArrayList<String> decimal;
+    private Uri uri;
+    private ArrayList<Integer> finalHLines;
+    private ArrayList<Integer> finalVLines;
     private MaterialDialog dialog;
     private Interface in;
-    private ProcessingTask processingTask;
 
     @Override
     public void onAttach(Context context) {
@@ -70,10 +72,20 @@ public class PreprocessingFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        bitmap.recycle();
-        bitmap = null;
-        outputImage.setImageBitmap(null);
-        outputImage = null;
+        if (bitmap != null) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+
+        if (outputImage != null) {
+            outputImage.setImageBitmap(null);
+            outputImage = null;
+        }
+
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
 
         System.gc();
 
@@ -88,7 +100,7 @@ public class PreprocessingFragment extends Fragment {
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
 
-        Uri uri = Uri.parse(getArguments().getString("Uri"));
+        uri = Uri.parse(getArguments().getString("Uri"));
         try {
             // Retrieve bitmap
             bitmap = MediaStore.Images.Media.getBitmap(
@@ -99,10 +111,10 @@ public class PreprocessingFragment extends Fragment {
             e.printStackTrace();
         }
 
-        processingTask = new ProcessingTask();
-        processingTask.execute(bitmap);
+        new ProcessingTask().execute(bitmap);
     }
 
+    /* AsyncTask class to handle heavy processing */
     private class ProcessingTask extends AsyncTask<Bitmap, String, Boolean> {
         private Mat mat;
 
@@ -124,30 +136,27 @@ public class PreprocessingFragment extends Fragment {
             mat = removeNoise(mat);
             mat = computeSkewAngle(mat);
 
-            ArrayList<Point> centroids = getCentroids(mat);
+            Bitmap processed = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(mat, processed);
+            uri = com.scanlibrary.Utils.getUri(getActivity(), processed);
 
             // Dot detection
+            ArrayList<Point> centroids = getCentroids(mat);
             sortCentroidsByY(centroids);
             ArrayList<Integer> hLines = createHLines(centroids);
-            ArrayList<Integer> refinedHLines = removeDenseHLines(mat, hLines);
-            //ArrayList<Integer> finalHLines = fillMissingHLines(mat, refinedHLines);
+            finalHLines = removeDenseHLines(mat, hLines);
             sortCentroidsByX(centroids);
             ArrayList<Integer> vLines = createVLines(centroids);
             ArrayList<Integer> refinedVLines = removeDenseVLines(vLines);
-            ArrayList<Integer> finalVLines = fillMissingVLines(mat, refinedVLines);
+            finalVLines = fillMissingVLines(mat, refinedVLines);
 
-            System.out.println(refinedHLines.size() + " " + finalVLines.size());
+            System.out.println(finalHLines.size() + " " + finalVLines.size());
 
-            /*if (refinedHLines.size() % 3 == 0 && refinedVLines.size() % 2 == 0) {
-                System.out.println("Error");
-                notifyError();
-            }
-
-            System.out.println("Continue");
+            if (finalHLines.size() % 3 != 0 || refinedVLines.size() % 2 != 0)
+                return false;
 
             // Cell recognition
-            ArrayList<String> binary = getBinary(mat, refinedVLines, refinedHLines);
-            decimal = convertToDecimal(binary);*/
+            createBoxes(mat, finalHLines, finalVLines);
 
             return true;
         }
@@ -156,14 +165,10 @@ public class PreprocessingFragment extends Fragment {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 displayImage(mat);
+                mat.release();
                 dismissDialog();
-            }
+            } else notifyError();
         }
-    }
-
-    private void notifyError() {
-        dismissDialog();
-        showErrorDialog();
     }
 
     /* Rejects result and returns to home screen */
@@ -181,7 +186,7 @@ public class PreprocessingFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                in.translateImage(decimal);
+                in.translateImage(uri, finalHLines, finalVLines);
             }
         };
     }
@@ -418,16 +423,16 @@ public class PreprocessingFragment extends Fragment {
                 //System.out.println("In " + curr + " - " + prev + " = " +
                 //(curr - prev));
                 if (i == 1) {
-                    Imgproc.line(mat, new Point(0, prev),
-                            new Point(mat.width(), prev), new Scalar(255));
-                    Imgproc.line(mat, new Point(0, curr),
-                            new Point(mat.width(), curr), new Scalar(255));
+                    //Imgproc.line(mat, new Point(0, prev),
+                            //new Point(mat.width(), prev), new Scalar(255));
+                    //Imgproc.line(mat, new Point(0, curr),
+                            //new Point(mat.width(), curr), new Scalar(255));
 
                     refinedHLines.add(prev);
                     refinedHLines.add(curr);
                 } else {
-                    Imgproc.line(mat, new Point(0, curr),
-                            new Point(mat.width(), curr), new Scalar(255));
+                    //Imgproc.line(mat, new Point(0, curr),
+                            //new Point(mat.width(), curr), new Scalar(255));
 
                     refinedHLines.add(curr);
                 }
@@ -449,8 +454,8 @@ public class PreprocessingFragment extends Fragment {
                     if (hLines.get(j) - prev > avg - 5) {
                         //System.out.println("In" + yCoords.get(j) + " - " + prev + " = " +
                         //(yCoords.get(j) - prev));
-                        Imgproc.line(mat, new Point(0, hLines.get(j)),
-                                new Point(mat.width(), hLines.get(j)), new Scalar(255));
+                        //Imgproc.line(mat, new Point(0, hLines.get(j)),
+                                //new Point(mat.width(), hLines.get(j)), new Scalar(255));
 
                         refinedHLines.add(hLines.get(j));
 
@@ -469,62 +474,6 @@ public class PreprocessingFragment extends Fragment {
 
         return refinedHLines;
     }
-
-    /*private ArrayList<Integer> fillMissingHLines(Mat mat, ArrayList<Integer> refinedHLines) {
-        ArrayList<Integer> finaHLines = new ArrayList<>();
-
-        int sum = 0;
-
-        // Get mean distance between all horizontal lines
-        for (int i = 1; i < refinedHLines.size(); i++)
-            sum += refinedHLines.get(i) - refinedHLines.get(i - 1);
-        int avg = sum / (refinedHLines.size() - 1);
-
-        System.out.println(avg);
-
-        sum = 0;
-
-        // Get the variance and standard deviation of the distances between horizontal lines
-        for (int i = 1; i < refinedHLines.size(); i++)
-            sum += Math.pow((refinedHLines.get(i) - refinedHLines.get(i - 1)) - avg, 2);
-        int var = sum / (refinedHLines.size() - 1);
-        int sd = (int) Math.sqrt(var);
-
-        System.out.println(var);
-        System.out.println(sd);
-
-        sum = 0;
-        int cnt = 0;
-
-        // Get mean distance between horizontal lines within the same cell
-        for (int i = 1; i < refinedHLines.size(); i++) {
-            if (refinedHLines.get(i) - refinedHLines.get(i - 1) >= avg - sd &&
-                    refinedHLines.get(i) - refinedHLines.get(i - 1) < avg) {
-                sum += refinedHLines.get(i) - refinedHLines.get(i - 1);
-                cnt++;
-            }
-        }
-        int distBwD = sum / cnt;
-
-        System.out.println(distBwD);
-
-        sum = 0;
-        cnt = 0;
-
-        for (int i = 1; i < refinedHLines.size(); i++) {
-            System.out.println(refinedHLines.get(i) - refinedHLines.get(i - 1));
-            if (refinedHLines.get(i) - refinedHLines.get(i - 1) <= avg + sd + 10 &&
-                    refinedHLines.get(i) - refinedHLines.get(i - 1) > avg) {
-                sum += refinedHLines.get(i) - refinedHLines.get(i - 1);
-                cnt++;
-            }
-        }
-        int distBwC = sum / cnt;
-
-        System.out.println(distBwC);
-
-        return finaHLines;
-    }*/
 
     /* Sorts the x-coordinates of centroids */
     private void sortCentroidsByX(List<Point> centroids) {
@@ -605,7 +554,7 @@ public class PreprocessingFragment extends Fragment {
             sum += vLines.get(i) - vLines.get(i - 1);
         int avg = sum / (vLines.size() - 1);
 
-        System.out.println(avg);
+        //System.out.println(avg);
 
         sum = 0;
 
@@ -615,8 +564,8 @@ public class PreprocessingFragment extends Fragment {
         int var = sum / (vLines.size() - 1);
         int sd = (int) Math.sqrt(var);
 
-        System.out.println(var);
-        System.out.println(sd);
+        //System.out.println(var);
+        //System.out.println(sd);
 
         sum = 0;
         int cnt = 0;
@@ -631,7 +580,7 @@ public class PreprocessingFragment extends Fragment {
         }
         avg = sum / cnt;
 
-        System.out.println(avg);
+        //System.out.println(avg);
 
         int i = 1;
         int prev = vLines.get(i - 1);
@@ -706,7 +655,7 @@ public class PreprocessingFragment extends Fragment {
             sum += refinedVLines.get(i) - refinedVLines.get(i - 1);
         int avg = sum / (refinedVLines.size() - 1);
 
-        System.out.println(avg);
+        //System.out.println(avg);
 
         sum = 0;
 
@@ -716,8 +665,8 @@ public class PreprocessingFragment extends Fragment {
         int var = sum / (refinedVLines.size() - 1);
         int sd = (int) Math.sqrt(var);
 
-        System.out.println(var);
-        System.out.println(sd);
+        //System.out.println(var);
+        //System.out.println(sd);
 
         sum = 0;
         int cnt = 0;
@@ -732,7 +681,7 @@ public class PreprocessingFragment extends Fragment {
         }
         int distBwD = sum / cnt;
 
-        System.out.println(distBwD);
+        //System.out.println(distBwD);
 
         sum = 0;
         cnt = 0;
@@ -747,16 +696,16 @@ public class PreprocessingFragment extends Fragment {
         }
         int distBwC = sum / cnt;
 
-        System.out.println(distBwC);
+        //System.out.println(distBwC);
 
         if (refinedVLines.get(1) - refinedVLines.get(0) >
                 refinedVLines.get(2) - refinedVLines.get(1)) {
-            Imgproc.line(mat, new Point(refinedVLines.get(0) - distBwD, 0),
-                    new Point(refinedVLines.get(0) - distBwD, mat.height()), new Scalar(255));
+            //Imgproc.line(mat, new Point(refinedVLines.get(0) - distBwD, 0),
+                    //new Point(refinedVLines.get(0) - distBwD, mat.height()), new Scalar(255));
             finalVLines.add(refinedVLines.get(0) - distBwD);
         }
 
-        System.out.println(distBwD + " " + distBwC);
+        //System.out.println(distBwD + " " + distBwC);
 
         boolean dot = false;
 
@@ -771,8 +720,8 @@ public class PreprocessingFragment extends Fragment {
 
                         if (dist < (refinedVLines.get(i) - distBwD) + sd) {
                             //System.out.println(dist + " " + dot);
-                            Imgproc.line(mat, new Point(dist, 0),
-                                    new Point(dist, mat.height()), new Scalar(255));
+                            //Imgproc.line(mat, new Point(dist, 0),
+                                    //new Point(dist, mat.height()), new Scalar(255));
                             finalVLines.add(dist);
 
                             dot = false;
@@ -783,8 +732,8 @@ public class PreprocessingFragment extends Fragment {
 
                         if (dist < (refinedVLines.get(i) - distBwC) + sd) {
                             //System.out.println(dist + " " + dot);
-                            Imgproc.line(mat, new Point(dist, 0),
-                                    new Point(dist, mat.height()), new Scalar(255));
+                            //Imgproc.line(mat, new Point(dist, 0),
+                                    //new Point(dist, mat.height()), new Scalar(255));
                             finalVLines.add(dist);
 
                             dot = true;
@@ -793,8 +742,8 @@ public class PreprocessingFragment extends Fragment {
                 }
 
                 //System.out.println("Line");
-                Imgproc.line(mat, new Point(refinedVLines.get(i), 0),
-                        new Point(refinedVLines.get(i), mat.height()), new Scalar(255));
+                //Imgproc.line(mat, new Point(refinedVLines.get(i), 0),
+                        //new Point(refinedVLines.get(i), mat.height()), new Scalar(255));
                 finalVLines.add(refinedVLines.get(i));
             }
             else {
@@ -802,13 +751,13 @@ public class PreprocessingFragment extends Fragment {
                 else dot = false;
 
                 if (i == 1) {
-                    Imgproc.line(mat, new Point(refinedVLines.get(0), 0),
-                            new Point(refinedVLines.get(0), mat.height()), new Scalar(255));
+                    //Imgproc.line(mat, new Point(refinedVLines.get(0), 0),
+                            //new Point(refinedVLines.get(0), mat.height()), new Scalar(255));
                     finalVLines.add(refinedVLines.get(0));
                 }
 
-                Imgproc.line(mat, new Point(refinedVLines.get(i), 0),
-                        new Point(refinedVLines.get(i), mat.height()), new Scalar(255));
+                //Imgproc.line(mat, new Point(refinedVLines.get(i), 0),
+                        //new Point(refinedVLines.get(i), mat.height()), new Scalar(255));
                 finalVLines.add(refinedVLines.get(i));
             }
         }
@@ -816,19 +765,19 @@ public class PreprocessingFragment extends Fragment {
         return finalVLines;
     }
 
-    /* Get binary codes of each cell */
-    private ArrayList<String> getBinary(Mat mat, ArrayList<Integer> refinedVLines,
-                                        ArrayList<Integer> refinedHLines) {
-        ArrayList<String> binary = new ArrayList<>();
-
+    /* Displays each cell enclosed in a boz */
+    private void createBoxes(Mat mat, ArrayList<Integer> finalHLines,
+                             ArrayList<Integer> finalVLines) {
         // Iterate through document one cell at a time
-        for (int i = 0; i < refinedHLines.size(); i += 3) {
-            for (int j = 0; j < refinedVLines.size(); j += 2) {
+        for (int i = 0; i < finalHLines.size(); i += 3) {
+            for (int j = 0; j < finalVLines.size(); j += 2) {
                 // Cell edges
-                int top = refinedHLines.get(i) - 5;
-                int bot = refinedHLines.get(i + 2) + 5;
-                int lft = refinedVLines.get(j) - 5;
-                int rgt = refinedVLines.get(j + 1) + 5;
+                int top = finalHLines.get(i) - 5;
+                int bot = finalHLines.get(i + 2) + 5;
+                int lft = finalVLines.get(j) - 5;
+                int rgt = finalVLines.get(j + 1) + 5;
+
+                Imgproc.rectangle(mat, new Point(lft, top), new Point(rgt, bot), new Scalar(255));
 
                 // Mid horizontal lines
                 int mh1 = ((bot - top) / 3) + top;
@@ -836,111 +785,11 @@ public class PreprocessingFragment extends Fragment {
                 // Mid vertical line
                 int mdv = (lft + rgt) / 2;
 
-                String bcode = "";
-
-                // Check dot 1
-                if (checkDot(mat, lft, top, mdv, mh1).equals("2")) {
-                    notifyError();
-                    break;
-                }
-                else bcode += checkDot(mat, lft, top, mdv, mh1);
-
-                // Check dot 2
-                if (checkDot(mat, lft, mh1, mdv, mh2).equals("2")) {
-                    notifyError();
-                    break;
-                }
-                else bcode += checkDot(mat, lft, mh1, mdv, mh2);
-
-                // Check dot 3
-                if (checkDot(mat, lft, mh2, mdv, bot).equals("2")) {
-                    notifyError();
-                    break;
-                }
-                else bcode += checkDot(mat, lft, mh2, mdv, bot);
-
-                // Check dot 4
-                if (checkDot(mat, mdv, top, rgt, mh1).equals("2")) {
-                    notifyError();
-                    break;
-                }
-                else bcode += checkDot(mat, mdv, top, rgt, mh1);
-
-                // Check dot 5
-                if (checkDot(mat, mdv, mh1, rgt, mh2).equals("2")) {
-                    notifyError();
-                    break;
-                }
-                else bcode += checkDot(mat, mdv, mh1, rgt, mh2);
-
-                // Check dot 6
-                if (checkDot(mat, mdv, mh2, rgt, bot).equals("2")) {
-                    notifyError();
-                    break;
-                }
-                else bcode += checkDot(mat, mdv, mh2, rgt, bot);
-
-                binary.add(bcode);
-            }
-
-            binary.add("end");
-        }
-
-        return binary;
-    }
-
-    /* Check existence of dots */
-    private String checkDot(Mat mat, int x1, int y1, int x2, int y2) {
-        int w = x2 - x1;
-        int h = y2 - y1;
-
-        Rect roi = new Rect(x1, y1, w, h);
-        if (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= mat.cols() && 0 <= roi.y &&
-                0 <= roi.height && roi.y + roi.height <= mat.rows()) {
-            Mat dot = mat.submat(roi);
-            int cnt = Core.countNonZero(dot);
-            if (cnt >= (w * h) / 3) return "1";
-            else return "0";
-        }
-
-        return "2";
-    }
-
-    /* Converts binary codes to decimal */
-    private ArrayList<String> convertToDecimal(ArrayList<String> binary) {
-        ArrayList<String> decimal = new ArrayList<>();
-
-        int i = 0;
-        while (i < binary.size()) {
-            if (binary.get(i).equals("end")) {
-                decimal.add("64");
-                i++;
-            }
-            else if (binary.get(i).equals("000000")) {
-                decimal.add("00");
-                i++;
-
-                while (binary.get(i).equals("000000")) i++;
-            }
-            else {
-                String word = "";
-
-                while (!binary.get(i).equals("end") && !binary.get(i).equals("000000")) {
-                    int val = Integer.parseInt(binary.get(i), 2);
-                    String dec = "";
-
-                    if (val < 10) dec = "0" + String.valueOf(val);
-                    else dec = String.valueOf(val);
-
-                    word += dec;
-                    i++;
-                }
-
-                decimal.add(word);
+                Imgproc.line(mat, new Point(lft, mh1), new Point(rgt, mh1), new Scalar(255));
+                Imgproc.line(mat, new Point(lft, mh2), new Point(rgt, mh2), new Scalar(255));
+                Imgproc.line(mat, new Point(mdv, top), new Point(mdv, bot), new Scalar(255));
             }
         }
-
-        return decimal;
     }
 
     /* Displays progress dialog */
@@ -953,11 +802,17 @@ public class PreprocessingFragment extends Fragment {
         dialog.show();
     }
 
+    private void notifyError() {
+        dialog.dismiss();
+        showErrorDialog();
+    }
+
     /* Displays error dialog */
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
                 .content(R.string.error)
                 .positiveText(R.string.agree)
+                .cancelable(false)
                 .onPositive(onClickPositive());
 
         dialog = builder.build();
@@ -969,13 +824,7 @@ public class PreprocessingFragment extends Fragment {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,
                                 @NonNull DialogAction dialogAction) {
-                if (processingTask != null &&
-                        processingTask.getStatus() != AsyncTask.Status.FINISHED) {
-                    processingTask.cancel(true);
-                    dialog.dismiss();
-                    dialog = null;
-                    getActivity().finish();
-                }
+                getActivity().finish();
             }
         };
     }

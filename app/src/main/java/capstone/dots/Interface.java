@@ -1,5 +1,7 @@
 package capstone.dots;
 
+import android.net.Uri;
+
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
@@ -9,5 +11,5 @@ import java.util.ArrayList;
  */
 
 public interface Interface {
-    void translateImage(ArrayList<String> decimal);
+    void translateImage(Uri uri, ArrayList<Integer> finalHLines, ArrayList<Integer> finalVLines);
 }

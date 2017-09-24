@@ -226,6 +226,7 @@ public class ScanFragment extends Fragment {
 
     private class ScanAsyncTask extends AsyncTask<Void, Void, Bitmap> {
         private Map<Integer, PointF> points;
+        private Uri uri;
 
         private ScanAsyncTask(Map<Integer, PointF> points) {
             this.points = points;
@@ -240,8 +241,7 @@ public class ScanFragment extends Fragment {
         @Override
         protected Bitmap doInBackground(Void... params) {
             Bitmap bitmap = getScannedBitmap(original, points);
-            Uri uri = Utils.getUri(getActivity(), bitmap);
-            onScanFinish(uri);
+            uri = Utils.getUri(getActivity(), bitmap);
             return bitmap;
         }
 
@@ -250,6 +250,7 @@ public class ScanFragment extends Fragment {
             super.onPostExecute(bitmap);
             bitmap.recycle();
             dismissDialog();
+            onScanFinish(uri);
         }
     }
 
@@ -258,13 +259,10 @@ public class ScanFragment extends Fragment {
         data.putExtra(ScanConstants.SCANNED_RESULT, uri);
         getActivity().setResult(Activity.RESULT_OK, data);
         original.recycle();
+
         System.gc();
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().finish();
-            }
-        });
+
+        getActivity().finish();
     }
 
     /* Displays progress dialog */

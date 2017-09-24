@@ -1,9 +1,13 @@
 package capstone.dots;
 
 import android.app.Fragment;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -14,11 +18,17 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,7 +44,9 @@ public class TranslationFragment extends Fragment {
     private View view;
     private EditText output;
     private MaterialDialog dialog;
-
+    private ArrayList<Integer> finalHLines;
+    private ArrayList<Integer> finalVLines;
+    private Bitmap bitmap;
     private ArrayList<HashMap<String, String>> files = new ArrayList<>();
 
     @Override
@@ -45,6 +57,23 @@ public class TranslationFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        if (bitmap != null) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+
+        System.gc();
+
+        super.onDestroy();
+    }
+
     private void init() {
         output = view.findViewById(R.id.output);
         ImageButton cancelButton = view.findViewById(R.id.cancelButton);
@@ -52,25 +81,62 @@ public class TranslationFragment extends Fragment {
 
         cancelButton.setOnClickListener(onClickCancel());
 
-        final ArrayList<String> decimal = getArguments().getStringArrayList("decimal");
+        Uri uri = getArguments().getParcelable("uri");
+        finalHLines = getArguments().getIntegerArrayList("finalHLines");
+        finalVLines = getArguments().getIntegerArrayList("finalVLines");
 
-        showProgressDialog(getResources().getString(R.string.translate));
-        AsyncTask.execute(new Runnable() {
-              @Override
-              public void run() {
-                  loadFiles(files);
-                  final ArrayList<String> translation = getTranslation(decimal);
+        try {
+            // Retrieve bitmap
+            bitmap = MediaStore.Images.Media.getBitmap(
+                    getActivity().getApplicationContext().getContentResolver(), uri);
+            getActivity().getApplicationContext().getContentResolver().delete(
+                    uri, null, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-                  getActivity().runOnUiThread(new Runnable() {
-                      @Override
-                      public void run() {
-                          outputTranslation(translation);
+        Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8U);
+        Utils.bitmapToMat(bitmap, mat);
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 
-                          dismissDialog();
-                      }
-                  });
-              }
-          });
+        new TranslationTask().execute(mat);
+    }
+
+    private class TranslationTask extends AsyncTask<Mat, String, Boolean> {
+        ArrayList<String> translation = new ArrayList<>();
+
+        @Override
+        protected void onPreExecute() {
+            showProgressDialog(getResources().getString(R.string.translate));
+        }
+
+        @Override
+        protected Boolean doInBackground(Mat... params) {
+            loadFiles(files);
+
+            try {
+                ArrayList<String> binary = getBinary(params[0], finalHLines, finalVLines);
+                ArrayList<String> decimal = convertToDecimal(binary);
+                translation = getTranslation(decimal);
+            } catch (Exception e) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                outputTranslation(translation);
+                dialog.dismiss();
+            } else notifyError();
+        }
+    }
+
+    private void notifyError() {
+        dialog.dismiss();
+        showErrorDialog();
     }
 
     private View.OnClickListener onClickCancel() {
@@ -83,6 +149,7 @@ public class TranslationFragment extends Fragment {
     }
 
     private void outputTranslation(ArrayList<String> translation) {
+        System.out.println("Output");
         for (int i = 0; i < translation.size(); i++) {
             if (translation.get(i).contains("NON")) {
                 String[] parts = translation.get(i).split("NON");
@@ -175,6 +242,106 @@ public class TranslationFragment extends Fragment {
         }
     }
 
+    /* Gets binary codes of each cell */
+    private ArrayList<String> getBinary(Mat mat, ArrayList<Integer> finalHLines,
+                                        ArrayList<Integer> finalVLines) {
+        ArrayList<String> binary = new ArrayList<>();
+
+        // Iterate through document one cell at a time
+        for (int i = 0; i < finalHLines.size(); i += 3) {
+            for (int j = 0; j < finalVLines.size(); j += 2) {
+                // Cell edges
+                int top = finalHLines.get(i) - 5;
+                int bot = finalHLines.get(i + 2) + 5;
+                int lft = finalVLines.get(j) - 5;
+                int rgt = finalVLines.get(j + 1) + 5;
+
+                // Mid horizontal lines
+                int mh1 = ((bot - top) / 3) + top;
+                int mh2 = ((2 * (bot - top)) / 3) + top;
+                // Mid vertical line
+                int mdv = (lft + rgt) / 2;
+
+                String bcode = "";
+
+                // Check dot 1
+                bcode += checkDot(mat, lft, top, mdv, mh1);
+
+                // Check dot 2
+                bcode += checkDot(mat, lft, mh1, mdv, mh2);
+
+                // Check dot 3
+                bcode += checkDot(mat, lft, mh2, mdv, bot);
+
+                // Check dot 4
+                bcode += checkDot(mat, mdv, top, rgt, mh1);
+
+                // Check dot 5
+                bcode += checkDot(mat, mdv, mh1, rgt, mh2);
+
+                // Check dot 6
+                bcode += checkDot(mat, mdv, mh2, rgt, bot);
+
+                System.out.println(bcode);
+
+                binary.add(bcode);
+            }
+
+            binary.add("END");
+        }
+
+        return binary;
+    }
+
+    /* Check existence of dots */
+    private String checkDot(Mat mat, int x1, int y1, int x2, int y2) {
+        int w = x2 - x1;
+        int h = y2 - y1;
+
+        Rect roi = new Rect(x1, y1, w, h);
+        Mat dot = mat.submat(roi);
+        int cnt = Core.countNonZero(dot);
+        if (cnt >= (w * h) / 3) return "1";
+        else return "0";
+    }
+
+    /* Converts binary codes to decimal */
+    private ArrayList<String> convertToDecimal(ArrayList<String> binary) {
+        ArrayList<String> decimal = new ArrayList<>();
+
+        int i = 0;
+        while (i < binary.size()) {
+            if (binary.get(i).equals("END")) {
+                decimal.add("64");
+                i++;
+            }
+            else if (binary.get(i).equals("000000")) {
+                decimal.add("00");
+                i++;
+
+                while (binary.get(i).equals("000000")) i++;
+            }
+            else {
+                String word = "";
+
+                while (!binary.get(i).equals("END") && !binary.get(i).equals("000000")) {
+                    int val = Integer.parseInt(binary.get(i), 2);
+                    String dec = "";
+
+                    if (val < 10) dec = "0" + String.valueOf(val);
+                    else dec = String.valueOf(val);
+
+                    word += dec;
+                    i++;
+                }
+
+                decimal.add(word);
+            }
+        }
+
+        return decimal;
+    }
+
     /* Translate decimal codes to English counterpart */
     private ArrayList<String> getTranslation(ArrayList<String> decimal) {
         ArrayList<String> translation = new ArrayList<>();
@@ -184,7 +351,7 @@ public class TranslationFragment extends Fragment {
             String segment = decimal.get(i);
             String output = "";
 
-            System.out.println(segment);
+            //System.out.println(segment);
 
             switch (segment) {
                 case "00":
@@ -198,7 +365,7 @@ public class TranslationFragment extends Fragment {
                     break;
             }
 
-            System.out.println(output);
+            //System.out.println(output);
 
             if (output.contains("_")) {
                 String composition= output.substring(
@@ -248,7 +415,7 @@ public class TranslationFragment extends Fragment {
             }
         }
 
-        System.out.println(segment);
+        //System.out.println(segment);
 
         // Translate when segment is a number
         if (composition.equals("NUM")) {
@@ -399,8 +566,25 @@ public class TranslationFragment extends Fragment {
         dialog.show();
     }
 
-    /* Destroys progress dialog */
-    private void dismissDialog() {
-        dialog.dismiss();
+    /* Displays error dialog */
+    private void showErrorDialog() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(R.string.error)
+                .positiveText(R.string.agree)
+                .cancelable(false)
+                .onPositive(onClickPositive());
+
+        dialog = builder.build();
+        dialog.show();
+    }
+
+    private MaterialDialog.SingleButtonCallback onClickPositive() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                getActivity().finish();
+            }
+        };
     }
 }
