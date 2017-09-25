@@ -80,12 +80,14 @@ public class TranslationFragment extends Fragment {
         super.onDestroy();
     }
 
+    /* Initializes view and variables */
     private void init() {
         output = view.findViewById(R.id.output);
+        ImageButton cancelButton = view.findViewById(R.id.cancel_button);
+        ImageButton proceedButton = view.findViewById(R.id.proceed_button);
+
         output.setText("", TextView.BufferType.SPANNABLE);
 
-        ImageButton cancelButton = view.findViewById(R.id.cancelButton);
-        ImageButton proceedButton = view.findViewById(R.id.proceedButton);
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
 
@@ -606,7 +608,7 @@ public class TranslationFragment extends Fragment {
     /* Displays error dialog */
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-                .content(R.string.translateError)
+                .content(R.string.translate_error)
                 .positiveText(R.string.okay)
                 .cancelable(false)
                 .onPositive(onClickPositive());

@@ -22,15 +22,18 @@ import java.util.Locale;
 /**
  * Created by jhansi on 04/04/15.
  */
+
 public class PickImageFragment extends Fragment {
     private IScanner scanner;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
         if (!(context instanceof IScanner)) {
             throw new ClassCastException("Activity must implement IScanner");
         }
+
         this.scanner = (IScanner) context;
     }
 
@@ -42,15 +45,13 @@ public class PickImageFragment extends Fragment {
     }
 
     private void init() {
-        if (isIntentPreferenceSet()) {
-            openMediaContent();
-        } else {
-            getActivity().finish();
-        }
+        if (isIntentPreferenceSet()) openMediaContent();
+        else getActivity().finish();
     }
 
     private boolean isIntentPreferenceSet() {
         int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
+
         return preference != 0;
     }
 
@@ -58,12 +59,14 @@ public class PickImageFragment extends Fragment {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");
+
         startActivityForResult(intent, ScanConstants.PICKFILE_REQUEST_CODE);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap bitmap = null;
+
         if (resultCode == Activity.RESULT_OK) {
             try {
                 if (requestCode == ScanConstants.PICKFILE_REQUEST_CODE) {
@@ -74,27 +77,27 @@ public class PickImageFragment extends Fragment {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
-            getActivity().finish();
-        }
-        if (bitmap != null) {
-            postImagePick(bitmap);
-        }
+        } else getActivity().finish();
+
+        if (bitmap != null) postImagePick(bitmap);
     }
 
     private byte[] getBitmapAsByteArray(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
         return stream.toByteArray();
     }
 
     private void createImageFile(byte[] byteArray) {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         ((Filename) this.getActivity().getApplication()).setGlobalFilename(timestamp);
+
         try {
             File file = new File(
                     ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
             if (!file.exists()) file.createNewFile();
+
             OutputStream out = new FileOutputStream(file);
             out.write(byteArray);
             out.close();
@@ -106,6 +109,7 @@ public class PickImageFragment extends Fragment {
     protected void postImagePick(Bitmap bitmap) {
         Uri uri = Utils.getUri(getActivity(), bitmap);
         bitmap.recycle();
+
         scanner.onBitmapSelect(uri);
     }
 
@@ -114,6 +118,7 @@ public class PickImageFragment extends Fragment {
         options.inSampleSize = 3;
         AssetFileDescriptor fileDescriptor =
                 getActivity().getContentResolver().openAssetFileDescriptor(selectedImg, "r");
+
         return BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.getFileDescriptor(), null, options);
     }

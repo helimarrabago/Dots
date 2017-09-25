@@ -12,14 +12,14 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"/>
     <FrameLayout
-        android:layout_width="65dp"
-        android:layout_height="65dp"
+        android:layout_width="@dimen/accelerometer_hw"
+        android:layout_height="@dimen/accelerometer_hw"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="20dp">
+        android:layout_marginStart="@dimen/accelerometer_margin"
+        android:layout_marginBottom="@dimen/accelerometer_margin">
         <TextView
-            android:id="@+id/acceleration"
+            android:id="@+id/accelerometer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -27,13 +27,13 @@
     </FrameLayout>
     <ImageButton
         android:id="@+id/capture"
-        android:layout_height="75dp"
-        android:layout_width="75dp"
-        android:padding="10dp"
+        android:layout_height="@dimen/capture_hw"
+        android:layout_width="@dimen/capture_hw"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/capture_margin"
+        android:padding="@dimen/capture_padding"
         android:src="@mipmap/ic_camera"
         android:background="@drawable/circular_button"
-        android:scaleType="centerInside"
-        android:layout_marginBottom="20dp"/>
+        android:scaleType="centerInside"/>
 </RelativeLayout>

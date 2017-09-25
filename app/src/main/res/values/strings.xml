@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Dots</string>
+    <string name="camera_caption">Touch to capture using camera</string>
+    <string name="gallery_caption">Touch to proceed to gallery</string>
     <string name="processing">Processing image...</string>
     <string name="translate">Translating image...</string>
-    <string name="processingError">An error occurred during processing :-(</string>
-    <string name="translateError">An error occurred during translation :-(</string>
+    <string name="processing_error">An error occurred during processing :-(</string>
+    <string name="translate_error">An error occurred during translation :-(</string>
     <string name="okay">Okay</string>
     <string name="confirm">Are you sure you want to delete this document?</string>
     <string name="yes">Yes</string>
@@ -14,15 +16,15 @@
         Braille document.</string>
     <string name="gallery">This button enables the user to retrieve an image of a Braille document
         from the gallery.</string>
-    <string name="crop_">2 Crop the acquired image</string>
-    <string name="cropSub">After acquiring an image, the app lets the user to define exactly which
-        area of the image is desired to be translated.</string>
-    <string name="confirmPre">3 Confirm the preprocessed image</string>
-    <string name="confirmPreSub">Once cropped, the image is subjected to a preprocessing phase to
-        make translation easier. The preprocessed image is displayed after which and the app will
-        ask the user to confirm if it was done properly.</string>
-    <string name="confirmTrans">4 Confirm to save translation</string>
-    <string name="confirmTransSub">The translation phase will start post confirmation of the
+    <string name="crop">2 Crop the acquired image</string>
+    <string name="crop_sub">After acquiring an image, the app lets the user to define exactly
+        which area of the image is desired to be translated.</string>
+    <string name="preprocessing">3 Confirm the preprocessed image</string>
+    <string name="preprocessing_sub">Once cropped, the image is subjected to a preprocessing
+        phase to make translation easier. The preprocessed image is displayed after which and the
+        app will ask the user to confirm if it was done properly.</string>
+    <string name="translation">4 Confirm to save translation</string>
+    <string name="translation_sub">The translation phase will start post confirmation of the
         preprocessed image. After then, the app will ask confirmation from the user to save the
         translation or not.</string>
     <string name="letters">Letters</string>
@@ -53,16 +55,16 @@
     <string name="x">X</string>
     <string name="y">Y</string>
     <string name="z">Z</string>
-    <string name="oneB">$1</string>
-    <string name="twoB">$2</string>
-    <string name="threeB">$3</string>
-    <string name="fourB">$4</string>
-    <string name="fiveB">$5</string>
-    <string name="sixB">$6</string>
-    <string name="sevenB">$7</string>
-    <string name="eightB">$8</string>
-    <string name="nineB">$9</string>
-    <string name="zeroB">$0</string>
+    <string name="one_b">$1</string>
+    <string name="two_b">$2</string>
+    <string name="three_b">$3</string>
+    <string name="four_b">$4</string>
+    <string name="five_b">$5</string>
+    <string name="six_b">$6</string>
+    <string name="seven_b">$7</string>
+    <string name="eight_b">$8</string>
+    <string name="nine_b">$9</string>
+    <string name="zero_b">$0</string>
     <string name="one">1</string>
     <string name="two">2</string>
     <string name="three">3</string>

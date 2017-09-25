@@ -9,15 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.scanlibrary.ScanConstants;
 
-import org.opencv.core.Mat;
-
 import java.util.ArrayList;
 
 /**
  * Created by Helimar Rabago on 12 Jul 2017.
  */
 
-public class ProcessingActivity extends AppCompatActivity implements Interface {
+public class ProcessingActivity extends AppCompatActivity implements IProcessing {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +36,7 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
         finish();
     }
 
+    /* Sends image to preprocessing up to cell recognition */
     private void preprocessImage(Uri uri) {
         PreprocessingFragment fragment = new PreprocessingFragment();
         Bundle bundle = new Bundle();
@@ -49,6 +48,7 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
         fragmentTransaction.commit();
     }
 
+    /* Sends image to translation */
     @Override
     public void translateImage(Uri uri, ArrayList<Integer> finalHLines,
                                ArrayList<Integer> finalVLines) {

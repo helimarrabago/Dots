@@ -272,7 +272,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         Sensor accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
-        acceleration = findViewById(R.id.acceleration);
+        acceleration = findViewById(R.id.accelerometer);
 
         mTextureView = findViewById(R.id.texture);
         ImageButton mStillImageButton = findViewById(R.id.capture);

@@ -8,7 +8,7 @@
     android:fitsSystemWindows="true"
     tools:context="capstone.dots.MainActivity">
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/appbar"
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -19,10 +19,7 @@
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bar_height"
-                android:layout_toStartOf="@+id/help_button"
-                app:tabMaxWidth="0dp"
-                app:tabGravity="fill"
-                app:tabMode="fixed"/>
+                android:layout_toStartOf="@+id/help_button"/>
             <ImageButton
                 android:id="@+id/help_button"
                 android:layout_width="@dimen/button_hw"

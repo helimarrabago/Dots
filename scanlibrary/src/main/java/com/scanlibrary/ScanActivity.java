@@ -1,17 +1,19 @@
 package com.scanlibrary;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.ComponentCallbacks2;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 /**
  * Created by jhansi on 28/03/15.
  */
 public class ScanActivity extends Activity implements IScanner, ComponentCallbacks2 {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,9 +26,7 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
     }
 
     @Override
-    public void onBackPressed() {
-        finish();
-    }
+    public void onBackPressed() { finish(); }
 
     private void init() {
         PickImageFragment fragment = new PickImageFragment();
@@ -89,11 +89,8 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
                    If the event is TRIM_MEMORY_COMPLETE, the process will be one of
                    the first to be terminated.
                 */
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.low_memory)
-                        .setMessage(R.string.low_memory_message)
-                        .create()
-                        .show();
+                showErrorDialog();
+
                 break;
             default:
                 /*
@@ -104,6 +101,15 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
                 */
                 break;
         }
+    }
+
+    /* Displays error dialog */
+    private void showErrorDialog() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
+                .content(R.string.low_memory);
+
+        MaterialDialog dialog = builder.build();
+        dialog.show();
     }
 
     public native Bitmap getScannedBitmap(Bitmap bitmap, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);

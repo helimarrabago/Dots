@@ -20,6 +20,7 @@ import java.util.Map;
 /**
  * Created by jhansi on 28/03/15.
  */
+
 public class PolygonView extends FrameLayout {
     protected Context context;
     private Paint paint;
@@ -36,27 +37,32 @@ public class PolygonView extends FrameLayout {
     public PolygonView(Context context) {
         super(context);
         this.context = context;
+
         init();
     }
 
     public PolygonView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
+
         init();
     }
 
     public PolygonView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
+
         init();
     }
 
     private void init() {
         polygonView = this;
+
         pointer1 = getImageView(0, 0);
         pointer2 = getImageView(getWidth(), 0);
         pointer3 = getImageView(0, getHeight());
         pointer4 = getImageView(getWidth(), getHeight());
+
         midPointer13 = getImageView(0, getHeight() / 2);
         midPointer13.setOnTouchListener(new MidPointTouchListenerImpl(pointer1, pointer3));
 
@@ -77,6 +83,7 @@ public class PolygonView extends FrameLayout {
         addView(midPointer24);
         addView(pointer3);
         addView(pointer4);
+
         initPaint();
     }
 
@@ -87,13 +94,12 @@ public class PolygonView extends FrameLayout {
 
     private void initPaint() {
         paint = new Paint();
-        paint.setColor(getResources().getColor(R.color.blue));
+        paint.setColor(ContextCompat.getColor(context, R.color.blue));
         paint.setStrokeWidth(4);
         paint.setAntiAlias(true);
     }
 
     public Map<Integer, PointF> getPoints() {
-
         List<PointF> points = new ArrayList<PointF>();
         points.add(new PointF(pointer1.getX(), pointer1.getY()));
         points.add(new PointF(pointer2.getX(), pointer2.getY()));
@@ -104,34 +110,31 @@ public class PolygonView extends FrameLayout {
     }
 
     public Map<Integer, PointF> getOrderedPoints(List<PointF> points) {
-
         PointF centerPoint = new PointF();
+
         int size = points.size();
         for (PointF pointF : points) {
             centerPoint.x += pointF.x / size;
             centerPoint.y += pointF.y / size;
         }
+
         Map<Integer, PointF> orderedPoints = new HashMap<>();
         for (PointF pointF : points) {
             int index = -1;
-            if (pointF.x < centerPoint.x && pointF.y < centerPoint.y) {
-                index = 0;
-            } else if (pointF.x > centerPoint.x && pointF.y < centerPoint.y) {
-                index = 1;
-            } else if (pointF.x < centerPoint.x && pointF.y > centerPoint.y) {
-                index = 2;
-            } else if (pointF.x > centerPoint.x && pointF.y > centerPoint.y) {
-                index = 3;
-            }
+
+            if (pointF.x < centerPoint.x && pointF.y < centerPoint.y) index = 0;
+            else if (pointF.x > centerPoint.x && pointF.y < centerPoint.y) index = 1;
+            else if (pointF.x < centerPoint.x && pointF.y > centerPoint.y) index = 2;
+            else if (pointF.x > centerPoint.x && pointF.y > centerPoint.y) index = 3;
+
             orderedPoints.put(index, pointF);
         }
+
         return orderedPoints;
     }
 
     public void setPoints(Map<Integer, PointF> pointFMap) {
-        if (pointFMap.size() == 4) {
-            setPointsCoordinates(pointFMap);
-        }
+        if (pointFMap.size() == 4) setPointsCoordinates(pointFMap);
     }
 
     private void setPointsCoordinates(Map<Integer, PointF> pointFMap) {
@@ -151,6 +154,7 @@ public class PolygonView extends FrameLayout {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);
+
         canvas.drawLine(pointer1.getX() + (pointer1.getWidth() / 2),
                 pointer1.getY() + (pointer1.getHeight() / 2),
                 pointer3.getX() + (pointer3.getWidth() / 2),
@@ -167,6 +171,7 @@ public class PolygonView extends FrameLayout {
                 pointer3.getY() + (pointer3.getHeight() / 2),
                 pointer4.getX() + (pointer4.getWidth() / 2),
                 pointer4.getY() + (pointer4.getHeight() / 2), paint);
+
         midPointer13.setX(pointer3.getX() - ((pointer3.getX() - pointer1.getX()) / 2));
         midPointer13.setY(pointer3.getY() - ((pointer3.getY() - pointer1.getY()) / 2));
         midPointer24.setX(pointer4.getX() - ((pointer4.getX() - pointer2.getX()) / 2));
@@ -186,6 +191,7 @@ public class PolygonView extends FrameLayout {
         imageView.setX(x);
         imageView.setY(y);
         imageView.setOnTouchListener(new TouchListenerImpl());
+
         return imageView;
     }
 
@@ -242,20 +248,21 @@ public class PolygonView extends FrameLayout {
                     DownPT.x = event.getX();
                     DownPT.y = event.getY();
                     StartPT = new PointF(v.getX(), v.getY());
+
                     break;
                 case MotionEvent.ACTION_UP:
                     int color = 0;
-                    if (isValidShape(getPoints())) {
+                    if (isValidShape(getPoints()))
                         color = ContextCompat.getColor(context, R.color.blue);
-                    } else {
-                        color = ContextCompat.getColor(context, R.color.red);
-                    }
+                    else color = ContextCompat.getColor(context, R.color.red);
                     paint.setColor(color);
+
                     break;
                 default:
                     break;
             }
             polygonView.invalidate();
+
             return true;
         }
     }
@@ -270,7 +277,6 @@ public class PolygonView extends FrameLayout {
     }
 
     private class TouchListenerImpl implements OnTouchListener {
-
         PointF DownPT = new PointF(); // Record Mouse Position When Pressed Down
         PointF StartPT = new PointF(); // Record Start Position of 'img'
 
@@ -287,27 +293,28 @@ public class PolygonView extends FrameLayout {
                         v.setY((int) (StartPT.y + mv.y));
                         StartPT = new PointF(v.getX(), v.getY());
                     }
+
                     break;
                 case MotionEvent.ACTION_DOWN:
                     DownPT.x = event.getX();
                     DownPT.y = event.getY();
                     StartPT = new PointF(v.getX(), v.getY());
+
                     break;
                 case MotionEvent.ACTION_UP:
                     int color = 0;
-                    if (isValidShape(getPoints())) {
+                    if (isValidShape(getPoints()))
                         color = ContextCompat.getColor(context, R.color.blue);
-                    } else {
-                        color = ContextCompat.getColor(context, R.color.red);
-                    }
+                    else color = ContextCompat.getColor(context, R.color.red);
                     paint.setColor(color);
+
                     break;
                 default:
                     break;
             }
             polygonView.invalidate();
+
             return true;
         }
-
     }
 }

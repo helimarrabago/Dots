@@ -2,28 +2,42 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <View
-        android:id="@+id/blockTop"
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/bar_top"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bar_height"
-        android:layout_alignParentTop="true"
-        android:background="@color/colorPrimary"/>
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bar_height"
+            android:gravity="center_vertical"
+            android:background="@color/colorPrimary">
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="@dimen/button_hw"
+                android:layout_height="@dimen/button_hw"
+                android:padding="@dimen/button_padding"
+                android:background="?selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_back"/>
+        </RelativeLayout>
+    </android.support.design.widget.AppBarLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/blockTop"
-        android:layout_above="@+id/blockBottom"
+        android:layout_below="@id/bar_top"
+        android:layout_above="@+id/bar_bottom"
         android:background="@android:color/white">
         <EditText
             android:id="@+id/output"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:textSize="20sp"
+            android:padding="@dimen/output_padding"
+            android:textSize="@dimen/output_size"
             android:background="@android:color/transparent"/>
     </ScrollView>
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/blockBottom"
+        android:id="@+id/bar_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -35,7 +49,7 @@
             android:background="@color/colorPrimary"
             android:orientation="horizontal">
             <ImageButton
-                android:id="@+id/deleteButton"
+                android:id="@+id/delete_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"
@@ -44,7 +58,7 @@
                 android:scaleType="centerInside"
                 android:src="@mipmap/ic_delete"/>
             <ImageButton
-                android:id="@+id/saveButton"
+                android:id="@+id/save_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"

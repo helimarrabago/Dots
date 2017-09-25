@@ -17,11 +17,11 @@ public class Utils {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
         String path = MediaStore.Images.Media.insertImage(
                 context.getContentResolver(), bitmap, "Title", null);
+
         return Uri.parse(path);
     }
 
     public static Bitmap getBitmap(Context context, Uri uri) throws IOException {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-        return bitmap;
+        return MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
     }
 }

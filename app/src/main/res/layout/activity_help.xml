@@ -5,9 +5,10 @@
     android:layout_height="match_parent"
     android:background="@color/background">
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/blockTop"
+        android:id="@+id/bar_top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/bar_margin"
         android:theme="@style/AppTheme.AppBarOverlay">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -15,7 +16,7 @@
             android:gravity="center_vertical"
             android:background="@color/colorPrimary">
             <ImageButton
-                android:id="@+id/backButton"
+                android:id="@+id/back_button"
                 android:layout_width="@dimen/button_hw"
                 android:layout_height="@dimen/button_hw"
                 android:padding="@dimen/button_padding"
@@ -28,11 +29,8 @@
         android:id="@+id/spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_below="@+id/blockTop"/>
+        android:layout_margin="@dimen/spinner_margin"
+        android:layout_below="@+id/bar_top"/>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

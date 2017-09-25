@@ -3,12 +3,8 @@ package capstone.dots;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +12,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.scanlibrary.ScanConstants;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -41,14 +37,16 @@ public class HistoryFragment extends Fragment {
         return view;
     }
 
+    /* Initializes views and variables */
     private void init() {
-        GridView gridView = view.findViewById(R.id.gridView);
+        GridView gridView = view.findViewById(R.id.grid_view);
         GridViewAdapter gridViewAdapter = new GridViewAdapter(
                 getActivity(), R.layout.fragment_history_item, getData());
         gridView.setAdapter(gridViewAdapter);
         gridView.setOnItemClickListener(onClickItem());
     }
 
+    /* Fills up grid with items */
     private ArrayList<ImageItem> getData() {
         final ArrayList<ImageItem> imageItems = new ArrayList<>();
 
@@ -89,12 +87,11 @@ public class HistoryFragment extends Fragment {
         return imageItems;
     }
 
+    /* Starts an intent to view item clicked */
     private GridView.OnItemClickListener onClickItem() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ImageItem item = (ImageItem) adapterView.getItemAtPosition(i);
-
                 Intent intent = new Intent(getActivity(), DocumentActivity.class);
                 intent.putExtra("filename", filename);
                 startActivity(intent);

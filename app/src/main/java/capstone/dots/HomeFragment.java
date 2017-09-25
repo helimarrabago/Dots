@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import com.andexert.library.RippleView;
 import com.scanlibrary.ScanActivity;
@@ -20,24 +19,21 @@ import com.scanlibrary.ScanConstants;
 
 public class HomeFragment extends Fragment {
     private View view;
-    private RippleView camera_button;
-    private RippleView gallery_button;
 
     private static final int REQUEST_CODE = 99;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_home, container, false);
+        init();
 
         return view;
     }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        camera_button = view.findViewById(R.id.camera_button);
-        gallery_button = view.findViewById(R.id.gallery_button);
+    /* Initializes views and variables */
+    private void init() {
+        RippleView camera_button = view.findViewById(R.id.camera_button);
+        RippleView gallery_button = view.findViewById(R.id.gallery_button);
 
         camera_button.setOnRippleCompleteListener(onClickCamera());
         gallery_button.setOnRippleCompleteListener(onClickGallery());

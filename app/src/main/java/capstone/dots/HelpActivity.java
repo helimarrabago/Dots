@@ -22,9 +22,10 @@ public class HelpActivity extends AppCompatActivity {
        init();
     }
 
+    /* Initializes views and variables */
     private void init() {
         Spinner spinner = findViewById(R.id.spinner);
-        ImageButton backButton = findViewById(R.id.backButton);
+        ImageButton backButton = findViewById(R.id.back_button);
 
         spinner.setOnItemSelectedListener(onSelectItem());
         backButton.setOnClickListener(onClickBack());
@@ -35,6 +36,7 @@ public class HelpActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
+    /* Changes content according to item selected */
     private Spinner.OnItemSelectedListener onSelectItem() {
         return new Spinner.OnItemSelectedListener() {
             @Override
@@ -62,6 +64,7 @@ public class HelpActivity extends AppCompatActivity {
         };
     }
 
+    /* Returns to main activity */
     private View.OnClickListener onClickBack() {
         return new View.OnClickListener() {
             @Override

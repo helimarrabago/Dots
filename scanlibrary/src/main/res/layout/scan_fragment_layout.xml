@@ -12,10 +12,10 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/bar_height"
             android:background="@color/colorPrimary"
-            android:textSize="16sp"
-            android:paddingStart="20dp"
+            android:layout_marginStart="@dimen/caption_margin"
+            android:textSize="@dimen/caption_size"
             android:gravity="center_vertical"
-            android:text="@string/cropping"
+            android:text="@string/crop_caption"
             android:textColor="@android:color/white"/>
     </android.support.design.widget.AppBarLayout>
     <android.support.design.widget.AppBarLayout
@@ -31,7 +31,7 @@
             android:background="@color/colorPrimary"
             android:orientation="horizontal">
             <ImageButton
-                android:id="@+id/cancelButton"
+                android:id="@+id/cancel_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"
@@ -40,7 +40,7 @@
                 android:scaleType="centerInside"
                 android:src="@mipmap/ic_cancel"/>
             <ImageButton
-                android:id="@+id/rotLeftButton"
+                android:id="@+id/rot_left_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"
@@ -49,7 +49,7 @@
                 android:scaleType="centerInside"
                 android:src="@mipmap/ic_left"/>
             <ImageButton
-                android:id="@+id/rotRightButton"
+                android:id="@+id/rot_right_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"
@@ -58,7 +58,7 @@
                 android:scaleType="centerInside"
                 android:src="@mipmap/ic_right"/>
             <ImageButton
-                android:id="@+id/proceedButton"
+                android:id="@+id/proceed_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"
@@ -76,20 +76,20 @@
         android:layout_gravity="center"
         android:layout_margin="@dimen/scan_padding">
         <FrameLayout
-            android:id="@+id/sourceFrame"
+            android:id="@+id/source_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_margin="@dimen/scan_padding">
             <ImageView
-                android:id="@+id/sourceImageView"
+                android:id="@+id/source_image_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"/>
         </FrameLayout>
         <com.scanlibrary.PolygonView
-            android:id="@+id/polygonView"
+            android:id="@+id/polygon_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"

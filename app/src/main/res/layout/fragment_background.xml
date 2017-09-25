@@ -7,14 +7,14 @@
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:padding="@dimen/table_padding"
         android:stretchColumns="*">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="@dimen/table_margin"
             android:text="@string/letters"
-            android:textSize="16sp"
+            android:textSize="@dimen/table_size"
             android:textColor="@android:color/black"/>
         <TableRow>
             <TextView
@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/a"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bB"
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/b"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bC"
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/c"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bD"
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/d"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bE"
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/e"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bF"
@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/f"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -72,53 +72,53 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/a"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/b"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/c"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/d"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/e"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/f"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="@dimen/table_margin">
             <TextView
                 android:id="@+id/bG"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/g"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bH"
@@ -126,7 +126,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/h"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bI"
@@ -134,7 +134,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/i"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bJ"
@@ -142,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/j"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bK"
@@ -150,7 +150,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/k"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bL"
@@ -158,7 +158,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/l"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -167,53 +167,53 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/g"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/h"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/i"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/j"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/k"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/l"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="@dimen/table_margin">
             <TextView
                 android:id="@+id/bM"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/m"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bN"
@@ -221,7 +221,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/n"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bO"
@@ -229,7 +229,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/o"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bP"
@@ -237,7 +237,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/p"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bQ"
@@ -245,7 +245,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/q"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bR"
@@ -253,7 +253,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/r"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -262,53 +262,53 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/m"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/n"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/o"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/p"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/q"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/r"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="@dimen/table_margin">
             <TextView
                 android:id="@+id/bS"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/s"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bT"
@@ -316,7 +316,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/t"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bU"
@@ -324,7 +324,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/u"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bV"
@@ -332,7 +332,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/v"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bW"
@@ -340,7 +340,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/w"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bX"
@@ -348,7 +348,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/x"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -357,53 +357,53 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/s"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/t"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/u"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/v"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/w"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/x"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="@dimen/table_margin">
             <TextView
                 android:id="@+id/bY"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/y"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/bZ"
@@ -411,7 +411,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/z"
-                android:textSize="34sp"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -420,23 +420,23 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/y"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/z"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginTop="@dimen/table_margin"
+            android:layout_marginBottom="@dimen/table_margin"
             android:text="@string/numbers"
-            android:textSize="16sp"
+            android:textSize="@dimen/table_size"
             android:textColor="@android:color/black"/>
         <TableRow>
             <TextView
@@ -444,48 +444,48 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/zeroB"
-                android:textSize="34sp"
+                android:text="@string/zero_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/oneB"
-                android:textSize="34sp"
+                android:text="@string/one_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/twoB"
-                android:textSize="34sp"
+                android:text="@string/two_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/threeB"
-                android:textSize="34sp"
+                android:text="@string/three_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/fourB"
-                android:textSize="34sp"
+                android:text="@string/four_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/fiveB"
-                android:textSize="34sp"
+                android:text="@string/five_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -494,77 +494,77 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/zero"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/one"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/two"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/three"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/four"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/five"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="@dimen/table_margin">
             <TextView
                 android:id="@+id/b6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/sixB"
-                android:textSize="34sp"
+                android:text="@string/six_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b7"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/sevenB"
-                android:textSize="34sp"
+                android:text="@string/seven_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b8"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/eightB"
-                android:textSize="34sp"
+                android:text="@string/eight_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:id="@+id/b9"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/nineB"
-                android:textSize="34sp"
+                android:text="@string/nine_b"
+                android:textSize="@dimen/braille_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
         <TableRow>
@@ -573,28 +573,28 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/six"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/seven"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/eight"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/nine"
-                android:textSize="13sp"
+                android:textSize="@dimen/braille_caption_size"
                 android:textColor="@android:color/black"/>
         </TableRow>
     </TableLayout>

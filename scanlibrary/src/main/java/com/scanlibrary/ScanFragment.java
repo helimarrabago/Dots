@@ -2,7 +2,6 @@ package com.scanlibrary;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -12,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,8 +20,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,16 +32,13 @@ import java.util.Map;
  * Created by jhansi on 29/03/15.
  */
 public class ScanFragment extends Fragment {
-    private ImageButton proceedButton;
-    private ImageButton cancelButton;
-    private ImageButton rotLeftButton;
-    private ImageButton rotRightButton;
     private ImageView sourceImageView;
     private FrameLayout sourceFrame;
     private PolygonView polygonView;
     private View view;
     private MaterialDialog dialog;
     private Bitmap original;
+    private String filename;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -51,27 +50,39 @@ public class ScanFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+
+        System.gc();
+
+        super.onDestroy();
+    }
+
     private void init() {
-        sourceImageView = view.findViewById(R.id.sourceImageView);
-        cancelButton = view.findViewById(R.id.cancelButton);
-        proceedButton = view.findViewById(R.id.proceedButton);
-        rotRightButton = view.findViewById(R.id.rotRightButton);
-        rotLeftButton = view.findViewById(R.id.rotLeftButton);
-        sourceFrame = view.findViewById(R.id.sourceFrame);
-        polygonView = view.findViewById(R.id.polygonView);
+        sourceImageView = view.findViewById(R.id.source_image_view);
+        ImageButton cancelButton = view.findViewById(R.id.cancel_button);
+        ImageButton proceedButton = view.findViewById(R.id.proceed_button);
+        ImageButton rotRightButton = view.findViewById(R.id.rot_right_button);
+        ImageButton rotLeftButton = view.findViewById(R.id.rot_left_button);
+        sourceFrame = view.findViewById(R.id.source_frame);
+        polygonView = view.findViewById(R.id.polygon_view);
 
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
         rotRightButton.setOnClickListener(onClickRotRight());
         rotLeftButton.setOnClickListener(onClickRotLeft());
 
+        filename = ((Filename) this.getActivity().getApplication()).getGlobalFilename();
+
         sourceFrame.post(new Runnable() {
             @Override
             public void run() {
                 original = getBitmap();
-                if (original != null) {
-                    setBitmap(original);
-                }
+                if (original != null) setBitmap(original);
             }
         });
     }
@@ -80,6 +91,9 @@ public class ScanFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                        filename + ".jpg");
+                file.delete();
                 getActivity().finish();
             }
         };
@@ -90,11 +104,8 @@ public class ScanFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Map<Integer, PointF> points = polygonView.getPoints();
-                if (isScanPointsValid(points)) {
-                    new ScanAsyncTask(points).execute();
-                } else {
-                    showErrorDialog();
-                }
+                if (isScanPointsValid(points)) new ScanAsyncTask(points).execute();
+                else showErrorDialog();
             }
         };
     }
@@ -104,20 +115,15 @@ public class ScanFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create matrix object (for transformation)
                 Matrix mat = new Matrix();
-                // Set rotation to 90 degrees clockwise
                 mat.postRotate(90);
-                // Create a copy (same w and h) of original bitmap
+
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(
                         original, original.getWidth(), original.getHeight(), true);
-                // Create a copy of bitmap transformed by matrix
-                // Actual rotation happens here
-                Bitmap rotatedBitmap = Bitmap.createBitmap(
+
+                original = Bitmap.createBitmap(
                         scaledBitmap, 0, 0, scaledBitmap.getWidth(),
                         scaledBitmap.getHeight(), mat, true);
-                // Set the original bitmap to the rotated one
-                original = rotatedBitmap;
 
                 setBitmap(original);
             }
@@ -129,20 +135,14 @@ public class ScanFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create matrix object (for transformation)
                 Matrix mat = new Matrix();
-                // Set rotation to 270 degrees clockwise (90 degrees counterclockwise)
                 mat.postRotate(270);
-                // Create a copy (same w and h) of original bitmap
+
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(
                         original, original.getWidth(), original.getHeight(), true);
-                // Create a copy of bitmap transformed by matrix
-                // Actual rotation happens here
-                Bitmap rotatedBitmap = Bitmap.createBitmap(
+                original = Bitmap.createBitmap(
                         scaledBitmap, 0, 0, scaledBitmap.getWidth(),
                         scaledBitmap.getHeight(), mat, true);
-                // Set the original bitmap to the rotated one
-                original = rotatedBitmap;
 
                 setBitmap(original);
             }
@@ -154,16 +154,16 @@ public class ScanFragment extends Fragment {
         try {
             Bitmap bitmap = Utils.getBitmap(getActivity(), uri);
             getActivity().getContentResolver().delete(uri, null, null);
+
             return bitmap;
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
-    private Uri getUri() {
-        return getArguments().getParcelable(ScanConstants.SELECTED_BITMAP);
-    }
+    private Uri getUri() { return getArguments().getParcelable(ScanConstants.SELECTED_BITMAP); }
 
     private void setBitmap(Bitmap original) {
         Bitmap scaledBitmap = scaledBitmap(
@@ -186,24 +186,17 @@ public class ScanFragment extends Fragment {
         outlinePoints.put(1, new PointF(tempBitmap.getWidth(), 0));
         outlinePoints.put(2, new PointF(0, tempBitmap.getHeight()));
         outlinePoints.put(3, new PointF(tempBitmap.getWidth(), tempBitmap.getHeight()));
+
         return outlinePoints;
     }
 
-    private void showErrorDialog() {
-        SingleButtonDialogFragment fragment = new SingleButtonDialogFragment(
-                R.string.ok, getString(R.string.cantCrop), "Error", true);
-        FragmentManager fm = getActivity().getFragmentManager();
-        fragment.show(fm, SingleButtonDialogFragment.class.toString());
-    }
-
-    private boolean isScanPointsValid(Map<Integer, PointF> points) {
-        return points.size() == 4;
-    }
+    private boolean isScanPointsValid(Map<Integer, PointF> points) { return points.size() == 4; }
 
     private Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
         Matrix m = new Matrix();
         m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()),
                 new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
+
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
@@ -235,21 +228,24 @@ public class ScanFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            showProgressDialog(getString(R.string.crop));
+
+            showProgressDialog(getString(R.string.cropping));
         }
 
         @Override
         protected Bitmap doInBackground(Void... params) {
             Bitmap bitmap = getScannedBitmap(original, points);
             uri = Utils.getUri(getActivity(), bitmap);
+
             return bitmap;
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
+
             bitmap.recycle();
-            dismissDialog();
+            dialog.dismiss();
             onScanFinish(uri);
         }
     }
@@ -275,8 +271,26 @@ public class ScanFragment extends Fragment {
         dialog.show();
     }
 
-    /* Destroys progress dialog */
-    private void dismissDialog() {
-        dialog.dismiss();
+    /* Displays error dialog */
+    private void showErrorDialog() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(R.string.crop_error)
+                .positiveText(R.string.okay)
+                .cancelable(false)
+                .onPositive(onClickPositive());
+
+        dialog = builder.build();
+        dialog.show();
+    }
+
+    /* Dismisses error dialog */
+    private MaterialDialog.SingleButtonCallback onClickPositive() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                dialog.dismiss();
+            }
+        };
     }
 }

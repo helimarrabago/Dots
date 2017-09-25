@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.andexert.library.RippleView;
 import com.scanlibrary.ScanConstants;
 
 import java.io.File;
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         init();
     }
 
+    /* Initializes views and variables */
     private void init() {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.

@@ -46,15 +46,15 @@ public class PreprocessingFragment extends Fragment {
     private ArrayList<Integer> finalHLines;
     private ArrayList<Integer> finalVLines;
     private MaterialDialog dialog;
-    private Interface in;
+    private IProcessing in;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (!(context instanceof Interface)) {
-            throw new ClassCastException("Activity must implement Interface");
+        if (!(context instanceof IProcessing)) {
+            throw new ClassCastException("Activity must implement IProcessing");
         }
-        this.in = (Interface) context;
+        this.in = (IProcessing) context;
     }
 
     @Override
@@ -89,10 +89,11 @@ public class PreprocessingFragment extends Fragment {
         super.onDestroy();
     }
 
+    /* Initializes views and variables */
     private void init() {
         outputImage = view.findViewById(R.id.outputImage);
-        ImageButton cancelButton = view.findViewById(R.id.cancelButton);
-        ImageButton proceedButton = view.findViewById(R.id.proceedButton);
+        ImageButton cancelButton = view.findViewById(R.id.cancel_button);
+        ImageButton proceedButton = view.findViewById(R.id.proceed_button);
 
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
@@ -111,7 +112,7 @@ public class PreprocessingFragment extends Fragment {
         new ProcessingTask().execute(bitmap);
     }
 
-    /* AsyncTask class to handle heavy processing */
+    /* Handles heavy processing */
     private class ProcessingTask extends AsyncTask<Bitmap, String, Boolean> {
         private Mat mat;
 
@@ -303,7 +304,7 @@ public class PreprocessingFragment extends Fragment {
         return centroids;
     }
 
-    /* Sorts the y-coordinates of centroids */
+    /* Sorts y-coordinates of centroids */
     private void sortCentroidsByY(ArrayList<Point> centroids) {
         Collections.sort(centroids, new PointCompareY());
     }
@@ -792,6 +793,7 @@ public class PreprocessingFragment extends Fragment {
         dialog.show();
     }
 
+    /* Notifies user of error */
     private void notifyError() {
         dialog.dismiss();
         showErrorDialog();
@@ -800,7 +802,7 @@ public class PreprocessingFragment extends Fragment {
     /* Displays error dialog */
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-                .content(R.string.processingError)
+                .content(R.string.processing_error)
                 .positiveText(R.string.okay)
                 .cancelable(false)
                 .onPositive(onClickPositive());
@@ -809,6 +811,7 @@ public class PreprocessingFragment extends Fragment {
         dialog.show();
     }
 
+    /* Returns user to main activity */
     private MaterialDialog.SingleButtonCallback onClickPositive() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override

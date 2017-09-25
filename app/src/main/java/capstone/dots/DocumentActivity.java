@@ -48,12 +48,16 @@ public class DocumentActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    /* Initializes views and variables */
     private void init() {
         output = findViewById(R.id.output);
         output.setText("", TextView.BufferType.SPANNABLE);
 
-        ImageButton deleteButton = findViewById(R.id.deleteButton);
-        ImageButton saveButton = findViewById(R.id.saveButton);
+        ImageButton backButton = findViewById(R.id.back_button);
+        ImageButton deleteButton = findViewById(R.id.delete_button);
+        ImageButton saveButton = findViewById(R.id.save_button);
+
+        backButton.setOnClickListener(onClickBack());
         deleteButton.setOnClickListener(onClickDelete());
         saveButton.setOnClickListener(onClickSave());
 
@@ -62,6 +66,7 @@ public class DocumentActivity extends AppCompatActivity {
         if (filename != null) displayDocument();
     }
 
+    /* Triggers confirmation to delete document currently opened */
     private View.OnClickListener onClickDelete() {
         return new View.OnClickListener() {
             @Override
@@ -71,6 +76,7 @@ public class DocumentActivity extends AppCompatActivity {
         };
     }
 
+    /* Saves changes on document currently opened */
     private View.OnClickListener onClickSave() {
         return new View.OnClickListener() {
             @Override
@@ -96,6 +102,7 @@ public class DocumentActivity extends AppCompatActivity {
         };
     }
 
+    /* Displays translation of document currently opened */
     private void displayDocument() {
         File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Translations",
                 filename + ".txt");
@@ -115,6 +122,7 @@ public class DocumentActivity extends AppCompatActivity {
         output.setText(Html.fromHtml(html));
     }
 
+    /* Displays confirmation dialog */
     private void showConfirmationDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
                 .content(R.string.confirm)
@@ -128,6 +136,7 @@ public class DocumentActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /* Deletes document currently opened */
     private MaterialDialog.SingleButtonCallback onClickPositive() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
@@ -148,12 +157,25 @@ public class DocumentActivity extends AppCompatActivity {
         };
     }
 
+    /* Closes confirmation dialog */
     private MaterialDialog.SingleButtonCallback onClickNegative() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,
                                 @NonNull DialogAction dialogAction) {
                 dialog.dismiss();
+            }
+        };
+    }
+
+    /* Returns to main activity */
+    private View.OnClickListener onClickBack() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DocumentActivity.this, MainActivity.class);
+                intent.putExtra("fragment", 1);
+                startActivity(intent);
             }
         };
     }

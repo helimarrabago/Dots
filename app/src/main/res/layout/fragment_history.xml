@@ -4,17 +4,17 @@
     android:layout_height="match_parent"
     android:background="@color/background">
     <GridView
-        android:id="@+id/gridView"
+        android:id="@+id/grid_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:columnWidth="100dp"
+        android:layout_margin="@dimen/grid_margin"
+        android:columnWidth="@dimen/grid_column"
         android:drawSelectorOnTop="true"
         android:gravity="center"
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth"
-        android:horizontalSpacing="2dp"
-        android:verticalSpacing="2dp"
+        android:horizontalSpacing="@dimen/grid_hv"
+        android:verticalSpacing="@dimen/grid_hv"
         android:focusable="true"
         android:clickable="true"/>
 </RelativeLayout>

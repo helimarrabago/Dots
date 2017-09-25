@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="@color/polygonViewCircleBackground"/>
+    <solid android:color="@color/circle_background"/>
     <size
-        android:width="@dimen/polygon_view_circle_width"
-        android:height="@dimen/polygon_view_circle_width"/>
+        android:width="@dimen/circle_width"
+        android:height="@dimen/circle_width"/>
     <stroke
-        android:width="@dimen/polygon_view_stroke_width"
-        android:color="@color/polygonViewCircleStrokeColor"/>
+        android:width="@dimen/stroke_width"
+        android:color="@color/circle_stroke_color"/>
 </shape>
