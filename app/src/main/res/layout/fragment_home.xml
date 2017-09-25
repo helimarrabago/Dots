@@ -22,10 +22,12 @@
             android:layout_marginBottom="5dp"
             app:rv_rippleDuration="200">
             <ImageButton
-                android:layout_width="130dp"
-                android:layout_height="130dp"
-                android:background="@drawable/circular_button_dark"
-                android:src="@mipmap/ic_camera"/>
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:background="@drawable/circular_button"
+                android:src="@mipmap/ic_camera"
+                android:padding="40dp"
+                android:scaleType="fitCenter"/>
         </com.andexert.library.RippleView>
         <TextView
             android:layout_width="wrap_content"
@@ -41,10 +43,12 @@
             android:layout_marginBottom="5dp"
             app:rv_rippleDuration="200">
             <ImageButton
-                android:layout_width="130dp"
-                android:layout_height="130dp"
-                android:background="@drawable/circular_button_dark"
-                android:src="@mipmap/ic_gallery"/>
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:background="@drawable/circular_button"
+                android:src="@mipmap/ic_gallery"
+                android:padding="40dp"
+                android:scaleType="fitCenter"/>
         </com.andexert.library.RippleView>
         <TextView
             android:layout_width="wrap_content"

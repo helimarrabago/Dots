@@ -97,7 +97,7 @@ public class PreprocessingFragment extends Fragment {
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
 
-        uri = Uri.parse(getArguments().getString("Uri"));
+        uri = Uri.parse(getArguments().getString("uri"));
         try {
             // Retrieve bitmap
             bitmap = MediaStore.Images.Media.getBitmap(
@@ -134,6 +134,7 @@ public class PreprocessingFragment extends Fragment {
                 mat = removeNoise(mat);
                 mat = correctSkew(mat);
             } catch (Exception e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -146,12 +147,13 @@ public class PreprocessingFragment extends Fragment {
                 ArrayList<Point> centroids = getCentroids(mat);
                 sortCentroidsByY(centroids);
                 ArrayList<Integer> hLines = createHLines(centroids);
-                finalHLines = removeDenseHLines(mat, hLines);
+                finalHLines = removeDenseHLines(hLines);
                 sortCentroidsByX(centroids);
                 ArrayList<Integer> vLines = createVLines(centroids);
                 ArrayList<Integer> refinedVLines = removeDenseVLines(vLines);
-                finalVLines = fillMissingVLines(mat, refinedVLines);
+                finalVLines = fillMissingVLines(refinedVLines);
             } catch (Exception e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -171,7 +173,7 @@ public class PreprocessingFragment extends Fragment {
             if (result) {
                 displayImage(mat);
                 mat.release();
-                dismissDialog();
+                dialog.dismiss();
             } else notifyError();
         }
     }
@@ -371,7 +373,7 @@ public class PreprocessingFragment extends Fragment {
     }
 
     /* Remove horizontal lines that are too near to each other */
-    private ArrayList<Integer> removeDenseHLines(Mat mat, ArrayList<Integer> hLines) {
+    private ArrayList<Integer> removeDenseHLines(ArrayList<Integer> hLines) {
         ArrayList<Integer> refinedHLines = new ArrayList<>();
 
         int sum = 0;
@@ -642,7 +644,7 @@ public class PreprocessingFragment extends Fragment {
     }
 
     /* Fills up potential vertical grid lines */
-    private ArrayList<Integer> fillMissingVLines(Mat mat, ArrayList<Integer> refinedVLines) {
+    private ArrayList<Integer> fillMissingVLines(ArrayList<Integer> refinedVLines) {
         ArrayList<Integer> finalVLines = new ArrayList<>();
 
         int sum = 0;
@@ -650,8 +652,6 @@ public class PreprocessingFragment extends Fragment {
         for (int i = 1; i < refinedVLines.size(); i++)
             sum += refinedVLines.get(i) - refinedVLines.get(i - 1);
         int avg = sum / (refinedVLines.size() - 1);
-
-        //System.out.println(avg);
 
         sum = 0;
 
@@ -661,15 +661,13 @@ public class PreprocessingFragment extends Fragment {
         int var = sum / (refinedVLines.size() - 1);
         int sd = (int) Math.sqrt(var);
 
-        //System.out.println(var);
-        //System.out.println(sd);
-
         sum = 0;
         int cnt = 0;
 
         // Get mean distance between vertical lines within the same cell
         for (int i = 1; i < refinedVLines.size(); i++) {
-            if (refinedVLines.get(i) - refinedVLines.get(i - 1) > avg - sd &&
+            System.out.println(refinedVLines.get(i) - refinedVLines.get(i - 1));
+            if (refinedVLines.get(i) - refinedVLines.get(i - 1) > avg - sd - 5 &&
                     refinedVLines.get(i) - refinedVLines.get(i - 1) < avg) {
                 sum += refinedVLines.get(i) - refinedVLines.get(i - 1);
                 cnt++;
@@ -677,22 +675,18 @@ public class PreprocessingFragment extends Fragment {
         }
         int distBwD = sum / cnt;
 
-        //System.out.println(distBwD);
-
         sum = 0;
         cnt = 0;
 
         // Get mean horizontal distance between cells
         for (int i = 1; i < refinedVLines.size(); i++) {
-            if (refinedVLines.get(i) - refinedVLines.get(i - 1) < avg + sd &&
+            if (refinedVLines.get(i) - refinedVLines.get(i - 1) < avg + sd + 5 &&
                     refinedVLines.get(i) - refinedVLines.get(i - 1) > avg) {
                 sum += refinedVLines.get(i) - refinedVLines.get(i - 1);
                 cnt++;
             }
         }
         int distBwC = sum / cnt;
-
-        //System.out.println(distBwC);
 
         if (refinedVLines.get(1) - refinedVLines.get(0) >
                 refinedVLines.get(2) - refinedVLines.get(1)) {
@@ -807,7 +801,7 @@ public class PreprocessingFragment extends Fragment {
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
                 .content(R.string.processingError)
-                .positiveText(R.string.agree)
+                .positiveText(R.string.okay)
                 .cancelable(false)
                 .onPositive(onClickPositive());
 
@@ -823,10 +817,5 @@ public class PreprocessingFragment extends Fragment {
                 getActivity().finish();
             }
         };
-    }
-
-    /* Destroys progress dialog */
-    private void dismissDialog() {
-        dialog.dismiss();
     }
 }

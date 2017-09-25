@@ -318,7 +318,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private void createImageFileName() {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        System.out.println(timestamp);
         ((Filename) this.getApplication()).setGlobalFilename(timestamp);
         try {
             mFile = new File(

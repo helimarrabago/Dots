@@ -26,9 +26,10 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             Intent data = extras.getParcelable("Data");
-            Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
-
-            preprocessImage(uri);
+            if (data != null) {
+                Uri uri = data.getParcelableExtra(ScanConstants.SCANNED_RESULT);
+                preprocessImage(uri);
+            }
         }
     }
 
@@ -40,7 +41,7 @@ public class ProcessingActivity extends AppCompatActivity implements Interface {
     private void preprocessImage(Uri uri) {
         PreprocessingFragment fragment = new PreprocessingFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("Uri", uri.toString());
+        bundle.putString("uri", uri.toString());
         fragment.setArguments(bundle);
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

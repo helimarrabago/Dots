@@ -14,16 +14,17 @@ import android.widget.TextView;
  */
 
 public class HelpActivity extends AppCompatActivity {
-    private Spinner spinner;
-    private ImageButton backButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help);
 
-        spinner = (Spinner) findViewById(R.id.spinner);
-        backButton = (ImageButton) findViewById(R.id.backButton);
+       init();
+    }
+
+    private void init() {
+        Spinner spinner = findViewById(R.id.spinner);
+        ImageButton backButton = findViewById(R.id.backButton);
 
         spinner.setOnItemSelectedListener(onSelectItem());
         backButton.setOnClickListener(onClickBack());

@@ -42,6 +42,11 @@
             android:name=".CameraActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".DocumentActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustNothing"
+            android:screenOrientation="portrait"/>
         <provider
             android:name=".GenericFileProvider"
             android:authorities="capstone.dots.provider"

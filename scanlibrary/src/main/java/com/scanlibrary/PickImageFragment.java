@@ -90,7 +90,6 @@ public class PickImageFragment extends Fragment {
 
     private void createImageFile(byte[] byteArray) {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        System.out.println(timestamp);
         ((Filename) this.getActivity().getApplication()).setGlobalFilename(timestamp);
         try {
             File file = new File(

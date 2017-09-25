@@ -1,6 +1,6 @@
 package capstone.dots;
 
-import android.content.res.TypedArray;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -8,13 +8,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import android.media.ThumbnailUtils;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.scanlibrary.ScanConstants;
 
 import java.io.File;
@@ -28,6 +31,7 @@ import java.util.Locale;
 
 public class HistoryFragment extends Fragment {
     private View view;
+    private String filename;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,6 +46,7 @@ public class HistoryFragment extends Fragment {
         GridViewAdapter gridViewAdapter = new GridViewAdapter(
                 getActivity(), R.layout.fragment_history_item, getData());
         gridView.setAdapter(gridViewAdapter);
+        gridView.setOnItemClickListener(onClickItem());
     }
 
     private ArrayList<ImageItem> getData() {
@@ -55,11 +60,11 @@ public class HistoryFragment extends Fragment {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
 
-                String name = file.getName();
-                int pos = name.lastIndexOf(".");
-                if (pos > 0) name = name.substring(0, pos);
+                filename = file.getName();
+                int pos = filename.lastIndexOf(".");
+                if (pos > 0) filename = filename.substring(0, pos);
 
-                if (new File(dir + "Translations", name + ".srl").exists()) {
+                if (new File(dir + "Translations", filename + ".txt").exists()) {
                     final int THUMBSIZE = 150;
 
                     Bitmap thumbnail = ThumbnailUtils.extractThumbnail(
@@ -69,7 +74,7 @@ public class HistoryFragment extends Fragment {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
                     Date testDate = null;
                     try {
-                        testDate = sdf.parse(name);
+                        testDate = sdf.parse(filename);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -82,5 +87,18 @@ public class HistoryFragment extends Fragment {
         }
 
         return imageItems;
+    }
+
+    private GridView.OnItemClickListener onClickItem() {
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ImageItem item = (ImageItem) adapterView.getItemAtPosition(i);
+
+                Intent intent = new Intent(getActivity(), DocumentActivity.class);
+                intent.putExtra("filename", filename);
+                startActivity(intent);
+            }
+        };
     }
 }

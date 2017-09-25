@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -31,15 +33,10 @@ import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -85,9 +82,10 @@ public class TranslationFragment extends Fragment {
 
     private void init() {
         output = view.findViewById(R.id.output);
+        output.setText("", TextView.BufferType.SPANNABLE);
+
         ImageButton cancelButton = view.findViewById(R.id.cancelButton);
         ImageButton proceedButton = view.findViewById(R.id.proceedButton);
-
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
 
@@ -96,8 +94,6 @@ public class TranslationFragment extends Fragment {
         finalVLines = getArguments().getIntegerArrayList("finalVLines");
 
         filename = ((Filename) this.getActivity().getApplication()).getGlobalFilename();
-
-        System.out.println(filename);
 
         try {
             // Retrieve bitmap
@@ -131,6 +127,7 @@ public class TranslationFragment extends Fragment {
                 ArrayList<String> decimal = convertToDecimal(binary);
                 translation = getTranslation(decimal);
             } catch (Exception e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -159,14 +156,16 @@ public class TranslationFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Translations",
-                        filename + ".srl");
+                String html = Html.toHtml(output.getText());
 
-                ObjectOutput out = null;
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Translations",
+                        filename + ".txt");
+
+                FileOutputStream stream = null;
                 try {
-                    out = new ObjectOutputStream(new FileOutputStream(file));
-                    out.writeObject(translation);
-                    out.close();
+                    stream = new FileOutputStream(file);
+                    stream.write(html.getBytes());
+                    stream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -406,7 +405,9 @@ public class TranslationFragment extends Fragment {
                 // Apply composition sign
                 switch (composition) {
                     case "CAP":
-                        output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                        if (output.length() > 2)
+                            output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                        else output = output.toUpperCase();
                         break;
                     case "DBL_CAP":
                         output = output.toUpperCase();
@@ -575,7 +576,9 @@ public class TranslationFragment extends Fragment {
         // Apply composition sign
         switch (composition) {
             case "CAP":
-                output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                if (output.length() > 2)
+                    output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                else output = output.toUpperCase();
                 break;
             case "DBL_CAP":
                 output = output.toUpperCase();
@@ -604,7 +607,7 @@ public class TranslationFragment extends Fragment {
     private void showErrorDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
                 .content(R.string.translateError)
-                .positiveText(R.string.agree)
+                .positiveText(R.string.okay)
                 .cancelable(false)
                 .onPositive(onClickPositive());
 
