@@ -11,11 +11,11 @@ import android.view.ViewGroup;
  */
 
 public class InstructionsFragment extends Fragment {
-    private View view;
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_instructions, container, false);
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_instructions, container, false);
 
         return view;
     }

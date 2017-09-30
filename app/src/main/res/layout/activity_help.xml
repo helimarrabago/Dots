@@ -30,7 +30,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/spinner_margin"
-        android:layout_below="@+id/bar_top"/>
+        android:layout_below="@+id/bar_top"
+        style="@style/Base.Widget.AppCompat.Spinner.Underlined"/>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

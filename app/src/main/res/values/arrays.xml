@@ -2,6 +2,7 @@
 <resources>
     <string-array name="choices_array">
         <item>Instructions</item>
+        <item>Tips</item>
         <item>Fundamental Translations</item>
     </string-array>
 </resources>

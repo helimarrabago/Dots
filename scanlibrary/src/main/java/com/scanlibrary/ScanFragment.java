@@ -91,10 +91,7 @@ public class ScanFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
-                        filename + ".jpg");
-                file.delete();
-                getActivity().finish();
+                showConfirmationDialog();
             }
         };
     }
@@ -277,14 +274,53 @@ public class ScanFragment extends Fragment {
                 .content(R.string.crop_error)
                 .positiveText(R.string.okay)
                 .cancelable(false)
-                .onPositive(onClickPositive());
+                .onPositive(onClickOkay());
 
         dialog = builder.build();
         dialog.show();
     }
 
     /* Dismisses error dialog */
-    private MaterialDialog.SingleButtonCallback onClickPositive() {
+    private MaterialDialog.SingleButtonCallback onClickOkay() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                dialog.dismiss();
+            }
+        };
+    }
+
+    /* Displays confirmation dialog */
+    private void showConfirmationDialog() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(R.string.confirm_cancel)
+                .positiveText(R.string.yes)
+                .negativeText(R.string.no)
+                .cancelable(false)
+                .onPositive(onClickYes())
+                .onNegative(onClickNo());
+
+        dialog = builder.build();
+        dialog.show();
+    }
+
+    /* Deletes document currently opened */
+    private MaterialDialog.SingleButtonCallback onClickYes() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                        filename + ".jpg");
+                file.delete();
+                getActivity().finish();
+            }
+        };
+    }
+
+    /* Closes confirmation dialog */
+    private MaterialDialog.SingleButtonCallback onClickNo() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,

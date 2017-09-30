@@ -62,7 +62,6 @@ public class DocumentActivity extends AppCompatActivity {
         saveButton.setOnClickListener(onClickSave());
 
         filename = getIntent().getStringExtra("filename");
-        System.out.println(filename);
         if (filename != null) displayDocument();
     }
 
@@ -98,6 +97,7 @@ public class DocumentActivity extends AppCompatActivity {
                 Intent intent = new Intent(DocumentActivity.this, MainActivity.class);
                 intent.putExtra("fragment", 1);
                 startActivity(intent);
+                overridePendingTransition(R.anim.left_in, R.anim.right_out);
             }
         };
     }
@@ -122,22 +122,35 @@ public class DocumentActivity extends AppCompatActivity {
         output.setText(Html.fromHtml(html));
     }
 
+    /* Returns to main activity */
+    private View.OnClickListener onClickBack() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DocumentActivity.this, MainActivity.class);
+                intent.putExtra("fragment", 1);
+                startActivity(intent);
+                overridePendingTransition(R.anim.left_in, R.anim.right_out);
+            }
+        };
+    }
+
     /* Displays confirmation dialog */
     private void showConfirmationDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
-                .content(R.string.confirm)
+                .content(R.string.confirm_delete)
                 .positiveText(R.string.yes)
                 .negativeText(R.string.no)
                 .cancelable(false)
-                .onPositive(onClickPositive())
-                .onNegative(onClickNegative());
+                .onPositive(onClickYes())
+                .onNegative(onClickNo());
 
         dialog = builder.build();
         dialog.show();
     }
 
     /* Deletes document currently opened */
-    private MaterialDialog.SingleButtonCallback onClickPositive() {
+    private MaterialDialog.SingleButtonCallback onClickYes() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,
@@ -153,29 +166,18 @@ public class DocumentActivity extends AppCompatActivity {
                 Intent intent = new Intent(DocumentActivity.this, MainActivity.class);
                 intent.putExtra("fragment", 1);
                 startActivity(intent);
+                overridePendingTransition(R.anim.left_in, R.anim.right_out);
             }
         };
     }
 
     /* Closes confirmation dialog */
-    private MaterialDialog.SingleButtonCallback onClickNegative() {
+    private MaterialDialog.SingleButtonCallback onClickNo() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,
                                 @NonNull DialogAction dialogAction) {
                 dialog.dismiss();
-            }
-        };
-    }
-
-    /* Returns to main activity */
-    private View.OnClickListener onClickBack() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DocumentActivity.this, MainActivity.class);
-                intent.putExtra("fragment", 1);
-                startActivity(intent);
             }
         };
     }

@@ -35,7 +35,15 @@
     <dimen name="instructions_title_margin">20dp</dimen>
     <dimen name="instructions_margin_v">10dp</dimen>
     <dimen name="instructions_margin_h">15dp</dimen>
-    <dimen name="instructions_image_hw">60dp</dimen>
+    <dimen name="instructions_icon_hw">60dp</dimen>
+    <dimen name="instructions_icon_margin">20dp</dimen>
+    <dimen name="instructions_image_hw">100dp</dimen>
     <dimen name="instructions_image_padding">15dp</dimen>
     <dimen name="instructions_caption_size">13sp</dimen>
+    <dimen name="tips_padding">20dp</dimen>
+    <dimen name="tips_icon_hw">60dp</dimen>
+    <dimen name="tips_icon_padding">10dp</dimen>
+    <dimen name="tips_margin_h">15dp</dimen>
+    <dimen name="tips_margin_v">10dp</dimen>
+    <dimen name="tips_size">13sp</dimen>
 </resources>

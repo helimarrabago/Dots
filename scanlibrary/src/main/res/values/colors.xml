@@ -3,8 +3,8 @@
     <color name="colorPrimary">#434343</color>
     <color name="colorPrimaryDark">#393939</color>
     <color name="colorAccent">#42CCC9</color>
-    <color name="blue">#ff59a9ff</color>
-    <color name="red">#ffff0000</color>
-    <color name="circle_stroke_color">#ff59a9ff</color>
+    <color name="blue">#ff42CCC9</color>
+    <color name="red">#ffBD3336</color>
+    <color name="circle_stroke_color">#ff42CCC9</color>
     <color name="circle_background">#90e5f8ff</color>
 </resources>

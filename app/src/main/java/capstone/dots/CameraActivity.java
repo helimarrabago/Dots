@@ -386,7 +386,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getApplicationContext(),
-                        "Dots will not function without camera services", Toast.LENGTH_SHORT).show();
+                        "Dots will not function without camera services",
+                        Toast.LENGTH_SHORT).show();
             }
         }
         else super.onRequestPermissionsResult(requestCode, permissions, grantResults);

@@ -56,7 +56,9 @@ public class TranslationFragment extends Fragment {
     private ArrayList<HashMap<String, String>> files = new ArrayList<>();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_translation, container, false);
         init();
 
@@ -149,7 +151,7 @@ public class TranslationFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                showConfirmationDialog();
             }
         };
     }
@@ -381,7 +383,7 @@ public class TranslationFragment extends Fragment {
             String segment = decimal.get(i);
             String output = "";
 
-            //System.out.println(segment);
+            System.out.println(segment);
 
             switch (segment) {
                 case "00":
@@ -395,10 +397,10 @@ public class TranslationFragment extends Fragment {
                     break;
             }
 
-            //System.out.println(output);
+            System.out.println(output);
 
             if (output.contains("_")) {
-                String composition= output.substring(
+                String composition = output.substring(
                         output.indexOf("_") + 1, output.lastIndexOf("_"));
 
                 translation.add(output.substring(0, output.indexOf("_")));
@@ -486,8 +488,7 @@ public class TranslationFragment extends Fragment {
                     }
                     else if (files.get(3).containsKey(segment.substring(0, 2))) {
                         output = files.get(3).get(segment.substring(0, 2));
-                        if (files.get(3).get(segment.substring(0, 2)).equals("to") ||
-                                files.get(3).get(segment.substring(0, 2)).equals("by"))
+                        if (output.equals("to") || output.equals("by"))
                             output += " ";
                         segment = segment.substring(2);
                     }
@@ -543,6 +544,9 @@ public class TranslationFragment extends Fragment {
                         // Translate one-cell part word contraction
                         if (files.get(6).containsKey(segment.substring(0, 2))) {
                             output += files.get(6).get(segment.substring(0, 2));
+                            if (output.equals("and") || output.equals("for") ||
+                                    output.equals("with") || output.equals("in"))
+                                output += " ";
                             segment = segment.substring(2);
                         }
                         // Translate one-cell lower sign middle contraction
@@ -611,18 +615,57 @@ public class TranslationFragment extends Fragment {
                 .content(R.string.translate_error)
                 .positiveText(R.string.okay)
                 .cancelable(false)
-                .onPositive(onClickPositive());
+                .onPositive(onClickOkay());
 
         dialog = builder.build();
         dialog.show();
     }
 
-    private MaterialDialog.SingleButtonCallback onClickPositive() {
+    private MaterialDialog.SingleButtonCallback onClickOkay() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,
                                 @NonNull DialogAction dialogAction) {
                 getActivity().finish();
+            }
+        };
+    }
+
+    /* Displays confirmation dialog */
+    private void showConfirmationDialog() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(R.string.confirm_cancel_translate)
+                .positiveText(R.string.yes)
+                .negativeText(R.string.no)
+                .cancelable(false)
+                .onPositive(onClickYes())
+                .onNegative(onClickNo());
+
+        dialog = builder.build();
+        dialog.show();
+    }
+
+    /* Deletes document currently opened */
+    private MaterialDialog.SingleButtonCallback onClickYes() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                        filename + ".jpg");
+                file.delete();
+                getActivity().finish();
+            }
+        };
+    }
+
+    /* Closes confirmation dialog */
+    private MaterialDialog.SingleButtonCallback onClickNo() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                dialog.dismiss();
             }
         };
     }

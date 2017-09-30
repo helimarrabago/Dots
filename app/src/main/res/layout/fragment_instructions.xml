@@ -3,29 +3,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/instructions_padding">
+        android:padding="@dimen/instructions_padding"
+        android:orientation="vertical">
         <TextView
-            android:id="@+id/acquire"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/acquire"
             android:textSize="@dimen/instructions_title_size"
             android:textColor="@android:color/black"/>
         <LinearLayout
-            android:id="@+id/camera_block"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/acquire"
             android:layout_marginTop="@dimen/instructions_margin_v"
             android:layout_marginStart="@dimen/instructions_margin_h"
             android:orientation="horizontal">
             <ImageView
-                android:id="@+id/camera_icon"
-                android:layout_width="@dimen/instructions_image_hw"
-                android:layout_height="@dimen/instructions_image_hw"
+                android:layout_width="@dimen/instructions_icon_hw"
+                android:layout_height="@dimen/instructions_icon_hw"
+                android:layout_marginStart="@dimen/instructions_icon_margin"
+                android:layout_marginEnd="@dimen/instructions_icon_margin"
                 android:padding="@dimen/instructions_image_padding"
                 android:src="@mipmap/ic_camera"
                 android:scaleType="centerInside"
@@ -40,17 +39,16 @@
                 android:textColor="@android:color/black"/>
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/gallery_block"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/camera_block"
             android:layout_marginTop="@dimen/instructions_margin_v"
             android:layout_marginStart="@dimen/instructions_margin_h"
             android:orientation="horizontal">
             <ImageView
-                android:id="@+id/gallery_icon"
-                android:layout_width="@dimen/instructions_image_hw"
-                android:layout_height="@dimen/instructions_image_hw"
+                android:layout_width="@dimen/instructions_icon_hw"
+                android:layout_height="@dimen/instructions_icon_hw"
+                android:layout_marginStart="@dimen/instructions_icon_margin"
+                android:layout_marginEnd="@dimen/instructions_icon_margin"
                 android:padding="@dimen/instructions_image_padding"
                 android:src="@mipmap/ic_gallery"
                 android:scaleType="centerInside"
@@ -65,60 +63,82 @@
                 android:textColor="@android:color/black"/>
         </LinearLayout>
         <TextView
-            android:id="@+id/crop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/gallery_block"
             android:layout_marginTop="@dimen/instructions_title_margin"
             android:text="@string/crop"
             android:textSize="@dimen/instructions_title_size"
             android:textColor="@android:color/black"/>
-        <TextView
-            android:id="@+id/crop_sub"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/crop"
             android:layout_marginTop="@dimen/instructions_margin_v"
             android:layout_marginStart="@dimen/instructions_margin_h"
-            android:text="@string/crop_sub"
-            android:textSize="@dimen/instructions_caption_size"
-            android:textColor="@android:color/black"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView
+                android:layout_width="@dimen/instructions_image_hw"
+                android:layout_height="@dimen/instructions_image_hw"
+                android:src="@mipmap/im_crop"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/instructions_margin_h"
+                android:text="@string/crop_sub"
+                android:textSize="@dimen/instructions_caption_size"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
         <TextView
-            android:id="@+id/confirm_pre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/crop_sub"
             android:layout_marginTop="@dimen/instructions_title_margin"
             android:text="@string/preprocessing"
             android:textSize="@dimen/instructions_title_size"
             android:textColor="@android:color/black"/>
-        <TextView
-            android:id="@+id/confirm_pre_sub"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/confirm_pre"
             android:layout_marginTop="@dimen/instructions_margin_v"
             android:layout_marginStart="@dimen/instructions_margin_h"
-            android:text="@string/preprocessing_sub"
-            android:textSize="@dimen/instructions_caption_size"
-            android:textColor="@android:color/black"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView
+                android:layout_width="@dimen/instructions_image_hw"
+                android:layout_height="@dimen/instructions_image_hw"
+                android:src="@mipmap/im_preprocess"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/instructions_margin_h"
+                android:text="@string/preprocessing_sub"
+                android:textSize="@dimen/instructions_caption_size"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
         <TextView
-            android:id="@+id/confirm_trans"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/confirm_pre_sub"
             android:layout_marginTop="@dimen/instructions_title_margin"
             android:text="@string/translation"
             android:textSize="@dimen/instructions_title_size"
             android:textColor="@android:color/black"/>
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/confirm_trans"
             android:layout_marginTop="@dimen/instructions_margin_v"
             android:layout_marginStart="@dimen/instructions_margin_h"
-            android:text="@string/translation_sub"
-            android:textSize="@dimen/instructions_caption_size"
-            android:textColor="@android:color/black"/>
-    </RelativeLayout>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView
+                android:layout_width="@dimen/instructions_image_hw"
+                android:layout_height="@dimen/instructions_image_hw"
+                android:src="@mipmap/im_translation"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/instructions_margin_h"
+                android:text="@string/translation_sub"
+                android:textSize="@dimen/instructions_caption_size"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+    </LinearLayout>
 </ScrollView>

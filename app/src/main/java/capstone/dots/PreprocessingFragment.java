@@ -16,6 +16,8 @@ import android.widget.ImageView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.scanlibrary.Filename;
+import com.scanlibrary.ScanConstants;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -27,6 +29,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +48,7 @@ public class PreprocessingFragment extends Fragment {
     private Uri uri;
     private ArrayList<Integer> finalHLines;
     private ArrayList<Integer> finalVLines;
+    private String filename;
     private MaterialDialog dialog;
     private IProcessing in;
 
@@ -97,6 +101,8 @@ public class PreprocessingFragment extends Fragment {
 
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
+
+        filename = ((Filename) this.getActivity().getApplication()).getGlobalFilename();
 
         uri = Uri.parse(getArguments().getString("uri"));
         try {
@@ -184,7 +190,7 @@ public class PreprocessingFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                showConfirmationDialog();
             }
         };
     }
@@ -402,7 +408,7 @@ public class PreprocessingFragment extends Fragment {
 
         // Get mean distance between horizontal lines within the same cell
         for (int i = 1; i < hLines.size(); i++) {
-            if (hLines.get(i) - hLines.get(i - 1) > avg - sd &&
+            if (hLines.get(i) - hLines.get(i - 1) > avg - sd - 5 &&
                     hLines.get(i) - hLines.get(i - 1) < avg) {
                 sum += hLines.get(i) - hLines.get(i - 1);
                 cnt++;
@@ -571,7 +577,7 @@ public class PreprocessingFragment extends Fragment {
 
         // Get mean distance between horizontal lines within the same cell
         for (int i = 1; i < vLines.size(); i++) {
-            if (vLines.get(i) - vLines.get(i - 1) > avg - sd &&
+            if (vLines.get(i) - vLines.get(i - 1) > avg - sd - 5 &&
                     vLines.get(i) - vLines.get(i - 1) < avg) {
                 sum += vLines.get(i) - vLines.get(i - 1);
                 cnt++;
@@ -805,19 +811,61 @@ public class PreprocessingFragment extends Fragment {
                 .content(R.string.processing_error)
                 .positiveText(R.string.okay)
                 .cancelable(false)
-                .onPositive(onClickPositive());
+                .onPositive(onClickOkay());
 
         dialog = builder.build();
         dialog.show();
     }
 
     /* Returns user to main activity */
-    private MaterialDialog.SingleButtonCallback onClickPositive() {
+    private MaterialDialog.SingleButtonCallback onClickOkay() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
             public void onClick(@NonNull MaterialDialog materialDialog,
                                 @NonNull DialogAction dialogAction) {
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                        filename + ".jpg");
+                file.delete();
                 getActivity().finish();
+            }
+        };
+    }
+
+    /* Displays confirmation dialog */
+    private void showConfirmationDialog() {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
+                .content(R.string.confirm_cancel_processing)
+                .positiveText(R.string.yes)
+                .negativeText(R.string.no)
+                .cancelable(false)
+                .onPositive(onClickYes())
+                .onNegative(onClickNo());
+
+        dialog = builder.build();
+        dialog.show();
+    }
+
+    /* Deletes document currently opened */
+    private MaterialDialog.SingleButtonCallback onClickYes() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                        filename + ".jpg");
+                file.delete();
+                getActivity().finish();
+            }
+        };
+    }
+
+    /* Closes confirmation dialog */
+    private MaterialDialog.SingleButtonCallback onClickNo() {
+        return new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog materialDialog,
+                                @NonNull DialogAction dialogAction) {
+                dialog.dismiss();
             }
         };
     }

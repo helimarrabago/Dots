@@ -50,6 +50,11 @@ public class HelpActivity extends AppCompatActivity {
                                 instructionsFragment).commit();
                         break;
                     case 1:
+                        TipsFragment tipsFragment = new TipsFragment();
+                        getSupportFragmentManager().beginTransaction().replace(R.id.content,
+                                tipsFragment).commit();
+                        break;
+                    case 2:
                         BackgroundFragment backgroundFragment = new BackgroundFragment();
                         getSupportFragmentManager().beginTransaction().replace(R.id.content,
                                 backgroundFragment).commit();

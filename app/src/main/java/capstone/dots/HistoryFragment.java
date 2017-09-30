@@ -27,10 +27,11 @@ import java.util.Locale;
 
 public class HistoryFragment extends Fragment {
     private View view;
-    private String filename;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_history, container, false);
         init();
 
@@ -58,12 +59,12 @@ public class HistoryFragment extends Fragment {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
 
-                filename = file.getName();
+                String filename = file.getName();
                 int pos = filename.lastIndexOf(".");
                 if (pos > 0) filename = filename.substring(0, pos);
 
                 if (new File(dir + "Translations", filename + ".txt").exists()) {
-                    final int THUMBSIZE = 150;
+                    final int THUMBSIZE = 100;
 
                     Bitmap thumbnail = ThumbnailUtils.extractThumbnail(
                             BitmapFactory.decodeFile(file.getAbsolutePath()),
@@ -79,7 +80,7 @@ public class HistoryFragment extends Fragment {
                     SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
                     String date = format.format(testDate);
 
-                    imageItems.add(new ImageItem(thumbnail, date));
+                    imageItems.add(new ImageItem(filename, thumbnail, date));
                 }
             }
         }
@@ -92,8 +93,10 @@ public class HistoryFragment extends Fragment {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ImageItem item = (ImageItem) adapterView.getItemAtPosition(i);
+
                 Intent intent = new Intent(getActivity(), DocumentActivity.class);
-                intent.putExtra("filename", filename);
+                intent.putExtra("filename", item.getFilename());
                 startActivity(intent);
             }
         };
