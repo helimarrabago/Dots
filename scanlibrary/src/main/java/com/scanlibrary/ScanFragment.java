@@ -44,7 +44,7 @@ public class ScanFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.scan_fragment_layout, container, false);
+        view = inflater.inflate(R.layout.fragment_scan, container, false);
         init();
 
         return view;

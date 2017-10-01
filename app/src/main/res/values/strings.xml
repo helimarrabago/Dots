@@ -30,6 +30,7 @@
     <string name="translation_sub">The translation phase will start post confirmation of the
         preprocessed image. After then, the app will ask confirmation from the user to save the
         translation or not.</string>
+    <string name="delete">Delete</string>
     <string name="letters">Letters</string>
     <string name="numbers">Numbers</string>
     <string name="a">A</string>

@@ -9,6 +9,8 @@ import android.os.Bundle;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import java.io.File;
+
 /**
  * Created by jhansi on 28/03/15.
  */
@@ -17,7 +19,7 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.scan_layout);
+        setContentView(R.layout.activity_scan);
 
         if (getPreferenceContent() == ScanConstants.OPEN_CAMERA) {
             Uri uri = getIntent().getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
@@ -26,7 +28,13 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
     }
 
     @Override
-    public void onBackPressed() { finish(); }
+    public void onBackPressed() {
+        String filename = ((Filename) this.getApplication()).getGlobalFilename();
+        File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                filename + ".jpg");
+        file.delete();
+        finish();
+    }
 
     private void init() {
         PickImageFragment fragment = new PickImageFragment();

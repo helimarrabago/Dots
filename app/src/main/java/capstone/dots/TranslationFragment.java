@@ -598,6 +598,7 @@ public class TranslationFragment extends Fragment {
     private void showProgressDialog(String message) {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
                 .content(message)
+                .cancelable(false)
                 .progress(true, 0);
 
         dialog = builder.build();

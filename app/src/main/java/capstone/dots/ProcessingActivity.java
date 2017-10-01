@@ -7,8 +7,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.scanlibrary.Filename;
 import com.scanlibrary.ScanConstants;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -33,6 +35,10 @@ public class ProcessingActivity extends AppCompatActivity implements IProcessing
 
     @Override
     public void onBackPressed() {
+        String filename = ((Filename) this.getApplication()).getGlobalFilename();
+        File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
+                filename + ".jpg");
+        file.delete();
         finish();
     }
 

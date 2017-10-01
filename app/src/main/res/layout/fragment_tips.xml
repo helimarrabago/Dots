@@ -99,7 +99,7 @@
                 android:layout_width="@dimen/tips_icon_hw"
                 android:layout_height="@dimen/tips_icon_hw"
                 android:padding="@dimen/tips_icon_padding"
-                android:src="@mipmap/ic_wrong"
+                android:src="@mipmap/ic_cancel"
                 android:scaleType="centerInside"
                 android:background="@drawable/circular_button_red"/>
             <TextView
@@ -120,7 +120,7 @@
                 android:layout_width="@dimen/tips_icon_hw"
                 android:layout_height="@dimen/tips_icon_hw"
                 android:padding="@dimen/tips_icon_padding"
-                android:src="@mipmap/ic_wrong"
+                android:src="@mipmap/ic_cancel"
                 android:scaleType="centerInside"
                 android:background="@drawable/circular_button_red"/>
             <TextView
