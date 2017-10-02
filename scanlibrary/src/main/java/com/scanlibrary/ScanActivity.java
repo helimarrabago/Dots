@@ -4,27 +4,38 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.ComponentCallbacks2;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by jhansi on 28/03/15.
  */
 public class ScanActivity extends Activity implements IScanner, ComponentCallbacks2 {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_scan);
 
         if (getPreferenceContent() == ScanConstants.OPEN_CAMERA) {
             Uri uri = getIntent().getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
             onBitmapSelect(uri);
         } else if (getPreferenceContent() == ScanConstants.OPEN_MEDIA) init();
+
+        setContentView(R.layout.activity_scan);
     }
 
     @Override
@@ -120,7 +131,7 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
         dialog.show();
     }
 
-    public native Bitmap getScannedBitmap(Bitmap bitmap, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
+    public static native Bitmap getScannedBitmap(Bitmap bitmap, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
 
     public native Bitmap getGrayBitmap(Bitmap bitmap);
 

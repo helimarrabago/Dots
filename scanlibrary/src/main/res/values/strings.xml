@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">ScanLibrary</string>
     <string name="cropping">Cropping image...</string>
+    <string name="capturing">Capturing image...</string>
     <string name="crop_error">Cannot crop the image, change the points :-(</string>
     <string name="okay">Okay</string>
     <string name="low_memory">Your phone is low on memory,

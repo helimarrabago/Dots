@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Sensor;
@@ -31,6 +32,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -45,19 +47,23 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.scanlibrary.Filename;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 import com.scanlibrary.Utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,8 +71,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -229,7 +237,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     };
 
     private static Size chooseOptimalSize(Size[] choices, int textureViewWidth,
-                                          int textureViewHeight, int maxWidth, int maxHeight, Size aspectRatio) {
+                                          int textureViewHeight, int maxWidth, int maxHeight,
+                                          Size aspectRatio) {
 
         // Collect the supported resolutions that are at least as big as the preview Surface
         List<Size> bigEnough = new ArrayList<>();
@@ -262,6 +271,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     }
 
     private TextView acceleration;
+    private FrameLayout surface;
+    private CameraGuideView guide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -273,9 +284,10 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         acceleration = findViewById(R.id.accelerometer);
-
         mTextureView = findViewById(R.id.texture);
         ImageButton mStillImageButton = findViewById(R.id.capture);
+        surface = findViewById(R.id.surface);
+
         mStillImageButton.setOnClickListener(onClickCapture());
     }
 
@@ -285,25 +297,18 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
             public void onClick(View view) {
                 createImageFileName();
                 takePicture();
-                sendImage();
+                //sendImage();
             }
         };
     }
 
-    private void sendImage() {
+    private void sendImage(Uri uri) {
         Intent intent = new Intent(this, ScanActivity.class);
 
-        Uri mFileUri = FileProvider.getUriForFile(
-                getApplicationContext(), "capstone.dots.provider", mFile);
-        Bitmap mBitmap = getBitmap(mFileUri);
-        if (mBitmap != null) {
-            Uri mBitmapUri = postImagePick(mBitmap);
-            intent.putExtra(ScanConstants.SCANNED_RESULT, mBitmapUri);
-            intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_CAMERA);
-            mBitmap.recycle();
-            System.gc();
-            startActivityForResult(intent, REQUEST_CODE);
-        }
+        intent.putExtra(ScanConstants.SCANNED_RESULT, uri);
+        intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_CAMERA);
+        System.gc();
+        startActivityForResult(intent, REQUEST_CODE);
     }
 
     @Override
@@ -314,6 +319,117 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
             intent.putExtra("Data", data);
             startActivity(intent);
         }
+    }
+
+    private MaterialDialog dialog;
+
+    private void cropCameraPicture() {
+        Uri mFileUri = FileProvider.getUriForFile(
+                getApplicationContext(), "capstone.dots.provider", mFile);
+        Bitmap mBitmap = getBitmap(mFileUri);
+        Uri uri = postImagePick(mBitmap);
+
+        mFile.delete();
+
+        Bitmap bitmap = null;
+        try {
+            bitmap = Utils.getBitmap(this, uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mBitmap.recycle();
+
+        HashMap<Integer, PointF> points = guide.getPoints();
+        int h = mPreviewSize.getWidth();
+        int w = mPreviewSize.getHeight();
+
+        new CropAsyncTask(points, h, w).execute(bitmap);
+    }
+
+    private class CropAsyncTask extends AsyncTask<Bitmap, Void, Bitmap> {
+        private Map<Integer, PointF> points;
+        private int h;
+        private int w;
+        private Uri uri;
+
+        private CropAsyncTask(Map<Integer, PointF> points, int h, int w) {
+            this.points = points;
+            this.h = h;
+            this.w = w;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            showProgressDialog(getString(com.scanlibrary.R.string.capturing));
+        }
+
+        @Override
+        protected Bitmap doInBackground(Bitmap... params) {
+            float xRatio = (float) params[0].getWidth() / w;
+            float yRatio = (float) params[0].getHeight() / h;
+
+            float x1 = (points.get(0).x) * xRatio;
+            float x2 = (points.get(1).x) * xRatio;
+            float x3 = (points.get(2).x) * xRatio;
+            float x4 = (points.get(3).x) * xRatio;
+            float y1 = (points.get(0).y) * yRatio;
+            float y2 = (points.get(1).y) * yRatio;
+            float y3 = (points.get(2).y) * yRatio;
+            float y4 = (points.get(3).y) * yRatio;
+
+            return ScanActivity.getScannedBitmap(params[0], x1, y1, x2, y2, x3, y3, x4, y4);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+
+            byte[] byteArray = getBitmapAsByteArray(bitmap);
+            createImageFile(byteArray);
+            uri = Utils.getUri(CameraActivity.this, bitmap);
+
+            bitmap.recycle();
+            dialog.dismiss();
+            sendImage(uri);
+        }
+    }
+
+    private byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+        return stream.toByteArray();
+    }
+
+    private void createImageFile(byte[] byteArray) {
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        ((Filename) this.getApplication()).setGlobalFilename(timestamp);
+
+        try {
+            File file = new File(
+                    ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
+            if (!file.exists()) file.createNewFile();
+
+            OutputStream out = new FileOutputStream(file);
+            out.write(byteArray);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* Displays progress dialog */
+    private void showProgressDialog(String message) {
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(CameraActivity.this)
+                .content(message)
+                .cancelable(false)
+                .progress(true, 0);
+
+        dialog = builder.build();
+        dialog.show();
     }
 
     private void createImageFileName() {
@@ -478,9 +594,15 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     mTextureView.setAspectRatio(
                             mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    guide = new CameraGuideView(
+                            this, mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    surface.addView(guide);
                 } else {
                     mTextureView.setAspectRatio(
                             mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    guide = new CameraGuideView(
+                            this, mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    surface.addView(guide);
                 }
 
                 mCameraId = cameraId;
@@ -763,7 +885,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                     }
                 }
 
-                sendImage();
+                cropCameraPicture();
             }
         }
     }

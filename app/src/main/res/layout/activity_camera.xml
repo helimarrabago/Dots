@@ -5,12 +5,17 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
     tools:context="capstone.dots.CameraActivity">
-    <capstone.dots.AutoFitTextureView
-        android:id="@+id/texture"
+    <FrameLayout
+        android:id="@+id/surface"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"/>
+        android:layout_alignParentTop="true">
+        <capstone.dots.AutoFitTextureView
+            android:id="@+id/texture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
     <FrameLayout
         android:layout_width="@dimen/accelerometer_hw"
         android:layout_height="@dimen/accelerometer_hw"
