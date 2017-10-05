@@ -25,12 +25,12 @@
 485856 braille
 3346 children
 183657 conceive
-183657 54 conceiving
+18365754 conceiving
 3638 could
 383657 deceive
-383657 54 deceiving
+38365754 deceiving
 383656 declare
-383656 54 declaring
+38365654 declaring
 3420 either
 5212 first
 5258 friend

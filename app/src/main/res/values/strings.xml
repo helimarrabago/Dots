@@ -79,15 +79,19 @@
     <string name="eight">8</string>
     <string name="nine">9</string>
     <string name="zero">0</string>
-    <string name="lighting_tip">I cannot accurately translate documents if it is too bright or too
-        dark. Try using natural light as the lighting.</string>
+    <string name="lighting_tip">I work best with natural light as the light source. I cannot process
+        documents if it is too bright or too dark.</string>
     <string name="capture_tip">You should try capturing an image of the document in an upright
-        manner perpendicular to the camera.</string>
+        manner perpendicular to the device. The accelerometer guide in the camera interface can
+        help you with that.</string>
     <string name="size_tip">For now, I am only designed to translate Braille embossed on paper of
         letter size (8.5" x 11").</string>
-    <string name="input_tip">You should make sure that the input image features the whole page and
-        is not zoomed.</string>
-    <string name="skew_tip">I cannot efficiently process documents that are too tilted.</string>
+    <string name="input_tip">You should make sure that the document is not captured zoomed and
+        instead, enclosed by the rectangular guide in the camera interface.</string>
+    <string name="skew_tip">I cannot efficiently process documents that are too tilted or
+        distorted.</string>
     <string name="crop_tip">When cropping, make sure that all background objects outside the page
-        are removed.</string>
+        are removed. Also, try to pattern the cropping box on the shape of the document.</string>
+    <string name="material_tip">I was not designed to translate Braille engraved on metallic
+        objects.</string>
 </resources>

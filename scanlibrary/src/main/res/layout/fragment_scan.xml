@@ -40,16 +40,16 @@
                 android:scaleType="centerInside"
                 android:src="@mipmap/ic_cancel"/>
             <ImageButton
-                android:id="@+id/rot_left_button"
+                android:id="@+id/original_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"
                 android:background="?selectableItemBackgroundBorderless"
                 android:padding="@dimen/button_padding"
                 android:scaleType="centerInside"
-                android:src="@mipmap/ic_left"/>
+                android:src="@mipmap/ic_crop"/>
             <ImageButton
-                android:id="@+id/rot_right_button"
+                android:id="@+id/rotate_button"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_hw"
                 android:layout_weight="1"

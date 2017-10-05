@@ -165,9 +165,8 @@ public class TranslationFragment extends Fragment {
                 File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Translations",
                         filename + ".txt");
 
-                FileOutputStream stream = null;
                 try {
-                    stream = new FileOutputStream(file);
+                    FileOutputStream stream = new FileOutputStream(file);
                     stream.write(html.getBytes());
                     stream.close();
                 } catch (IOException e) {
@@ -241,9 +240,9 @@ public class TranslationFragment extends Fragment {
 
         hash.put("15", "NUM");
         hash.put("05", "ITA");
-        hash.put("0505", "DBL_ITA");
+        hash.put("0505", "DBLITA");
         hash.put("01", "CAP");
-        hash.put("0101", "DBL_CAP");
+        hash.put("0101", "DBLCAP");
 
         files.add(hash);
 
@@ -284,9 +283,13 @@ public class TranslationFragment extends Fragment {
             for (int j = 0; j < finalVLines.size(); j += 2) {
                 // Cell edges
                 int top = finalHLines.get(i) - 5;
+                if (top < 0) top = 0;
                 int bot = finalHLines.get(i + 2) + 5;
-                int lft = finalVLines.get(j) - 5;
-                int rgt = finalVLines.get(j + 1) + 5;
+                if (bot > mat.rows()) bot = mat.rows();
+                int lft = finalVLines.get(j) - 10;
+                if (lft < 0) lft = 0;
+                int rgt = finalVLines.get(j + 1) + 10;
+                if (rgt > mat.cols()) rgt = mat.cols();
 
                 // Mid horizontal lines
                 int mh1 = ((bot - top) / 3) + top;
@@ -298,23 +301,16 @@ public class TranslationFragment extends Fragment {
 
                 // Check dot 1
                 bcode += checkDot(mat, lft, top, mdv, mh1);
-
                 // Check dot 2
                 bcode += checkDot(mat, lft, mh1, mdv, mh2);
-
                 // Check dot 3
                 bcode += checkDot(mat, lft, mh2, mdv, bot);
-
                 // Check dot 4
                 bcode += checkDot(mat, mdv, top, rgt, mh1);
-
                 // Check dot 5
                 bcode += checkDot(mat, mdv, mh1, rgt, mh2);
-
                 // Check dot 6
                 bcode += checkDot(mat, mdv, mh2, rgt, bot);
-
-                //System.out.println(bcode);
 
                 binary.add(bcode);
             }
@@ -344,23 +340,27 @@ public class TranslationFragment extends Fragment {
         int i = 0;
         while (i < binary.size()) {
             if (binary.get(i).equals("END")) {
-                decimal.add("64");
+                decimal.add("\n");
                 i++;
             }
             else if (binary.get(i).equals("000000")) {
-                decimal.add("00");
-                i++;
+                int c = 0;
+                while (binary.get(i).equals("000000")) {
+                    i++;
+                    c++;
+                }
 
-                while (binary.get(i).equals("000000")) i++;
+                if (c > 3) decimal.add("     ");
+                else decimal.add(" ");
             }
             else {
                 String word = "";
 
                 while (!binary.get(i).equals("END") && !binary.get(i).equals("000000")) {
-                    int val = Integer.parseInt(binary.get(i), 2);
-                    String dec = "";
+                    String dec = "0";
 
-                    if (val < 10) dec = "0" + String.valueOf(val);
+                    int val = Integer.parseInt(binary.get(i), 2);
+                    if (val < 10) dec += String.valueOf(val);
                     else dec = String.valueOf(val);
 
                     word += dec;
@@ -381,43 +381,35 @@ public class TranslationFragment extends Fragment {
         // Translate by segment
         for (int i = 0; i < decimal.size(); i++) {
             String segment = decimal.get(i);
-            String output = "";
+            String output = segment;
 
             System.out.println(segment);
 
-            switch (segment) {
-                case "00":
-                    output = " ";
-                    break;
-                case "64":
-                    output = "\n";
-                    break;
-                default:
-                    output = translateDecimal(segment);
-                    break;
+            if (!segment.equals("\n") && !segment.equals("     ") && !segment.equals(" ")) {
+                output = translateDecimal(segment);
+
+                if (output.contains("_")) {
+                    String composition =
+                            output.substring(output.indexOf("_") + 1, output.lastIndexOf("_"));
+
+                    translation.add(output.substring(0, output.indexOf("_")));
+                    output = output.substring(output.lastIndexOf("_") + 1);
+
+                    // Apply composition sign
+                    switch (composition) {
+                        case "CAP":
+                            if (output.length() >= 2)
+                                output = output.substring(0, 1).toUpperCase() + output.substring(1);
+                            else output = output.toUpperCase();
+                            break;
+                        case "DBLCAP":
+                            output = output.toUpperCase();
+                            break;
+                    }
+                }
             }
 
             System.out.println(output);
-
-            if (output.contains("_")) {
-                String composition = output.substring(
-                        output.indexOf("_") + 1, output.lastIndexOf("_"));
-
-                translation.add(output.substring(0, output.indexOf("_")));
-                output = output.substring(output.lastIndexOf("_") + 1);
-
-                // Apply composition sign
-                switch (composition) {
-                    case "CAP":
-                        if (output.length() > 2)
-                            output = output.substring(0, 1).toUpperCase() + output.substring(1);
-                        else output = output.toUpperCase();
-                        break;
-                    case "DBL_CAP":
-                        output = output.toUpperCase();
-                        break;
-                }
-            }
 
             translation.add(output);
         }
@@ -425,6 +417,7 @@ public class TranslationFragment extends Fragment {
         return translation;
     }
 
+    /* Compares each two-digit decimal value in a segment against map of known Braille patterns */
     private String translateDecimal(String segment) {
         String output = "";
         String composition = "";
@@ -435,34 +428,37 @@ public class TranslationFragment extends Fragment {
         // 7 - one cell whole word, 8 - punctuations, 9 - short form, 10 - two cells final
         // 12 - two cells initial
 
+        boolean hasComposition = false;
         // Check if preceded by a composition sign
-        if (segment.length() > 2) {
+        if (segment.length() > 4) {
             // Preceded by a two-cell composition sign
             if (files.get(0).containsKey(segment.substring(0, 4))) {
                 composition = files.get(0).get(segment.substring(0, 4));
                 segment = segment.substring(4);
+                hasComposition = true;
             }
-            // Precede by a one-cell composition sign
-            else if (files.get(0).containsKey(segment.substring(0, 2))) {
+        }
+        if (segment.length() > 2 && !hasComposition) {
+            // Preceded by a one-cell composition sign
+            if (files.get(0).containsKey(segment.substring(0, 2))) {
                 composition = files.get(0).get(segment.substring(0, 2));
                 segment = segment.substring(2);
             }
         }
-
-        //System.out.println(segment);
 
         // Translate when segment is a number
         if (composition.equals("NUM")) {
             for (int i = 0; i < segment.length(); i += 2) {
                 if (files.get(2).containsKey(segment.substring(i, i + 2)))
                     output += files.get(2).get(segment.substring(i, i + 2));
+                else if (files.get(8).containsKey(segment.substring(i, i + 2)))
+                    output += files.get(8).get(segment.substring(i, i + 2));
                 else output += "NON";
             }
         }
         // Translate when segment is a word
-        // Start with Grade 2, then Grade 1
         else {
-            // Check if only one cell remains in segment
+            // Check if only one cell remains
             if (segment.length() == 2) {
                 // Translate one-cell whole word contraction
                 if (files.get(7).containsKey(segment))
@@ -474,7 +470,7 @@ public class TranslationFragment extends Fragment {
                 else if (files.get(1).containsKey(segment))
                     output = files.get(1).get(segment);
             }
-            // If more than one cell remain
+            // Check if more than one cell remain
             else {
                 // Translate short form whole word contraction
                 if (files.get(9).containsKey(segment)) {
@@ -488,33 +484,11 @@ public class TranslationFragment extends Fragment {
                     }
                     else if (files.get(3).containsKey(segment.substring(0, 2))) {
                         output = files.get(3).get(segment.substring(0, 2));
-                        if (output.equals("to") || output.equals("by"))
-                            output += " ";
+                        if (output.equals("to") || output.equals("by")) output += " ";
                         segment = segment.substring(2);
                     }
 
                     while (segment.length() > 0) {
-                        /*// Translate five-cell short form contraction
-                        if (segment.length() >= 10) {
-                            if (files.get(9).containsKey(segment.substring(0, 10))) {
-                                output += files.get(9).get(segment.substring(0, 10));
-                                segment = segment.substring(10);
-                            }
-                        }
-                        // Translate four-cell short form contraction
-                        if (segment.length() >= 8) {
-                            if (files.get(9).containsKey(segment.substring(0, 8))) {
-                                output += files.get(9).get(segment.substring(0, 8));
-                                segment = segment.substring(8);
-                            }
-                        }
-                        // Translate three-cell short form contraction
-                        if (segment.length() >= 8) {
-                            if (files.get(9).containsKey(segment.substring(0, 6))) {
-                                output += files.get(9).get(segment.substring(0, 6));
-                                segment = segment.substring(6);
-                            }
-                        }*/
                         // Translate two-cell contractions
                         if (segment.length() >= 4) {
                             // Translate two-cell initial contraction
@@ -527,11 +501,6 @@ public class TranslationFragment extends Fragment {
                                 output += files.get(10).get(segment.substring(0, 4));
                                 segment = segment.substring(4);
                             }
-                            /*// Translate two-cell short form contraction
-                            else if (files.get(9).containsKey(segment.substring(0, 4))) {
-                                output += files.get(9).get(segment.substring(0, 4));
-                                segment = segment.substring(4);
-                            }*/
                             // Translate composition sign
                             else if (files.get(0).containsKey(segment.substring(0, 4))) {
                                 output += "_" + files.get(0).get(segment.substring(0, 4)) + "_";
@@ -543,16 +512,31 @@ public class TranslationFragment extends Fragment {
 
                         // Translate one-cell part word contraction
                         if (files.get(6).containsKey(segment.substring(0, 2))) {
+                            if (files.get(6).get(segment.substring(0, 2)).equals("with")
+                                    && output.length() > 0)
+                                output += " ";
                             output += files.get(6).get(segment.substring(0, 2));
                             if (output.equals("and") || output.equals("for") ||
-                                    output.equals("with") || output.equals("in"))
+                                    output.equals("with") || output.equals("in") ||
+                                    output.equals("of"))
                                 output += " ";
+                            segment = segment.substring(2);
+                        }
+                        // Translate one-cell lower sign beginning contraction
+                        else if (files.get(3).containsKey(segment.substring(0, 2)) &&
+                                files.get(3).get(segment.substring(0, 2)).equals("to")) {
+                            output += files.get(3).get(segment.substring(0, 2));
                             segment = segment.substring(2);
                         }
                         // Translate one-cell lower sign middle contraction
                         else if (files.get(4).containsKey(segment.substring(0, 2)) &&
-                                segment.length() > 2) {
+                                output.length() > 0 && segment.length() > 2) {
                             output += files.get(4).get(segment.substring(0, 2));
+                            segment = segment.substring(2);
+                        }
+                        // Translate one-cell lower sign whole world contraction
+                        else if (files.get(5).containsKey(segment.substring(0, 2))) {
+                            output += files.get(5).get(segment.substring(0, 2));
                             segment = segment.substring(2);
                         }
                         // Translate letter
@@ -582,12 +566,15 @@ public class TranslationFragment extends Fragment {
         // Apply composition sign
         switch (composition) {
             case "CAP":
-                if (output.length() > 2)
+                if (output.length() >= 2)
                     output = output.substring(0, 1).toUpperCase() + output.substring(1);
                 else output = output.toUpperCase();
                 break;
-            case "DBL_CAP":
-                output = output.toUpperCase();
+            case "DBLCAP":
+                if (output.contains("'")) {
+                    output = output.substring(0, output.indexOf("'")).toUpperCase() + "'" +
+                            output.substring(output.indexOf("'") + 1);
+                } else output = output.toUpperCase();
                 break;
         }
 

@@ -19,10 +19,10 @@
     <dimen name="braille_size">34sp</dimen>
     <dimen name="braille_caption_size">13sp</dimen>
     <dimen name="grid_margin">5dp</dimen>
-    <dimen name="grid_column">100dp</dimen>
+    <dimen name="grid_column">130dp</dimen>
     <dimen name="grid_hv">2dp</dimen>
     <dimen name="item_padding">2dp</dimen>
-    <dimen name="item_hw">100dp</dimen>
+    <dimen name="item_hw">130dp</dimen>
     <dimen name="item_caption_padding">2dp</dimen>
     <dimen name="item_caption_size">12sp</dimen>
     <dimen name="home_button_margin">5dp</dimen>

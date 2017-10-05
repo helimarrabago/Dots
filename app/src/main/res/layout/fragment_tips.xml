@@ -132,5 +132,26 @@
                 android:textSize="@dimen/tips_size"
                 android:textColor="@android:color/black"/>
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/tips_margin_v"
+            android:orientation="horizontal">
+            <ImageButton
+                android:layout_width="@dimen/tips_icon_hw"
+                android:layout_height="@dimen/tips_icon_hw"
+                android:padding="@dimen/tips_icon_padding"
+                android:src="@mipmap/ic_cancel"
+                android:scaleType="centerInside"
+                android:background="@drawable/circular_button_red"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/tips_margin_h"
+                android:layout_gravity="center_vertical"
+                android:text="@string/material_tip"
+                android:textSize="@dimen/tips_size"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

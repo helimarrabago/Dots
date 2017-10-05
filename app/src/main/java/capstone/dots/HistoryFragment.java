@@ -21,6 +21,8 @@ import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
@@ -52,7 +54,7 @@ public class HistoryFragment extends Fragment {
 
     /* Fills up grid with items */
     private ArrayList<ImageItem> getData() {
-        final ArrayList<ImageItem> imageItems = new ArrayList<>();
+        ArrayList<ImageItem> imageItems = new ArrayList<>();
 
         String dir = ScanConstants.IMAGE_PATH + File.separator;
         File images = new File(dir + "Images");
@@ -84,11 +86,34 @@ public class HistoryFragment extends Fragment {
                     String date = format.format(testDate);
 
                     imageItems.add(new ImageItem(filename, thumbnail, date));
+                    sortImageItems(imageItems);
                 }
             }
         }
 
         return imageItems;
+    }
+
+    private void sortImageItems(ArrayList<ImageItem> imageItems) {
+        Collections.sort(imageItems, new CompareItems());
+    }
+
+    private class CompareItems implements Comparator<ImageItem> {
+        @Override
+        public int compare(ImageItem imageItem1, ImageItem imageItem2) {
+            SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+            Date date1 = null;
+            Date date2 = null;
+            try {
+                date1 = format.parse(imageItem1.getDate());
+                date2 = format.parse(imageItem2.getDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            if (date1 == null || date2 == null) return 0;
+            return date1.compareTo(date2);
+        }
     }
 
     /* Starts an intent to view item clicked */

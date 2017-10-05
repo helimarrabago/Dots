@@ -41,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
         init();
     }
 
+    @Override
+    public void onBackPressed() {
+    }
+
     /* Initializes views and variables */
     private void init() {
         // Create the adapter that will return a fragment for each of the three

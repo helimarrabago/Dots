@@ -189,6 +189,7 @@ public class PreprocessingFragment extends Fragment {
         protected void onPostExecute(Boolean result) {
             if (result) {
                 displayImage(mat);
+                getBitmapAsByteArray(mat, "createBoxes");
                 mat.release();
                 dialog.dismiss();
             } else notifyError();
@@ -266,6 +267,9 @@ public class PreprocessingFragment extends Fragment {
         // Erosion thins the white objects in the image, eliminating small noise
         Imgproc.erode(mat, mat, Imgproc.getStructuringElement(
                 Imgproc.MORPH_ELLIPSE, new Size(5, 5)));
+        /*// Dilation widens the white objects in the image
+        Imgproc.dilate(mat, mat, Imgproc.getStructuringElement(
+                Imgproc.MORPH_ELLIPSE, new Size(7, 7)));*/
 
         return mat;
     }
@@ -387,8 +391,6 @@ public class PreprocessingFragment extends Fragment {
 
                 sum = (int) centroids.get(i).y;
                 cnt = 1;
-
-                if (i == centroids.size() - 1) hLines.add(sum);
             }
         }
 
@@ -409,6 +411,36 @@ public class PreprocessingFragment extends Fragment {
         System.out.println("removeDenseHLines");
 
         ArrayList<Integer> refinedHLines = new ArrayList<>();
+
+        ArrayList<Integer> copy = new ArrayList<>(hLines);
+        Collections.sort(copy);
+
+        int median = 0;
+        int q1 = 0;
+        int q3 = 0;
+        int iqr = 0;
+        if (copy.size() % 2 == 1) {
+            median = (copy.size() - 1) / 2;
+            q1 = (median - 1) / 2;
+            q3 = (copy.size() - 1 + median + 1) / 2;
+            iqr = copy.get(q3) - copy.get(q1);
+        } else {
+            median = copy.size() / 2;
+            if (median % 2 == 1) {
+                q1 = (median - 1) / 2;
+                q3 = (copy.size() + median - 1) / 2;
+                iqr = copy.get(q3) - copy.get(q1);
+            } else {
+                q1 = (copy.get(median / 2) + copy.get((median / 2) - 1)) / 2;
+                q3 = (copy.get((copy.size() + median) / 2) +
+                        copy.get(((copy.size() + median) / 2) - 1)) / 2;
+                iqr = q3 - q1;
+            }
+        }
+
+        int minimum = q1 - ((int) ((float) iqr * 1.5));
+        int maximum = q3 + ((int) ((float) iqr * 1.5));
+        System.out.println(minimum + " " + maximum);
 
         int sum = 0;
 
@@ -773,9 +805,13 @@ public class PreprocessingFragment extends Fragment {
             for (int j = 0; j < finalVLines.size(); j += 2) {
                 // Cell edges
                 int top = finalHLines.get(i) - 5;
+                if (top < 0) top = 0;
                 int bot = finalHLines.get(i + 2) + 5;
-                int lft = finalVLines.get(j) - 5;
-                int rgt = finalVLines.get(j + 1) + 5;
+                if (bot > mat.rows()) bot = mat.rows();
+                int lft = finalVLines.get(j) - 10;
+                if (lft < 0) lft = 0;
+                int rgt = finalVLines.get(j + 1) + 10;
+                if (rgt > mat.cols()) rgt = mat.cols();
 
                 Imgproc.rectangle(mat, new Point(lft, top), new Point(rgt, bot), new Scalar(255));
 
