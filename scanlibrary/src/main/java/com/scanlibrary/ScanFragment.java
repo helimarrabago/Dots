@@ -331,7 +331,7 @@ public class ScanFragment extends Fragment {
     }
 
     /* Displays confirmation dialog */
-    private void showConfirmationDialog() {
+    public void showConfirmationDialog() {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
                 .content(R.string.confirm_cancel)
                 .positiveText(R.string.yes)

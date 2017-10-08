@@ -8,6 +8,7 @@ import android.graphics.PointF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -25,6 +26,7 @@ import java.util.Map;
 /**
  * Created by jhansi on 28/03/15.
  */
+
 public class ScanActivity extends Activity implements IScanner, ComponentCallbacks2 {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,7 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
         File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
                 filename + ".jpg");
         file.delete();
+
         finish();
     }
 

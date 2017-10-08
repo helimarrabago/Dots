@@ -143,7 +143,10 @@ public class TranslationFragment extends Fragment {
             if (result) {
                 outputTranslation(translation);
                 dialog.dismiss();
-            } else notifyError();
+            } else {
+                dialog.dismiss();
+                showErrorDialog();
+            }
         }
     }
 
@@ -590,11 +593,6 @@ public class TranslationFragment extends Fragment {
 
         dialog = builder.build();
         dialog.show();
-    }
-
-    private void notifyError() {
-        dialog.dismiss();
-        showErrorDialog();
     }
 
     /* Displays error dialog */

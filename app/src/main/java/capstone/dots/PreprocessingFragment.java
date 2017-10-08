@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,14 +35,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by helimarrabago on 7/31/17.
@@ -62,9 +60,10 @@ public class PreprocessingFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (!(context instanceof IProcessing)) {
+
+        if (!(context instanceof IProcessing))
             throw new ClassCastException("Activity must implement IProcessing");
-        }
+
         this.in = (IProcessing) context;
     }
 
@@ -80,6 +79,8 @@ public class PreprocessingFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
+
         if (bitmap != null) {
             bitmap.recycle();
             bitmap = null;
@@ -101,8 +102,6 @@ public class PreprocessingFragment extends Fragment {
         }
 
         System.gc();
-
-        super.onDestroy();
     }
 
     /* Initializes views and variables */
@@ -115,29 +114,27 @@ public class PreprocessingFragment extends Fragment {
         proceedButton.setOnClickListener(onClickProceed());
 
         filename = ((Filename) this.getActivity().getApplication()).getGlobalFilename();
-
         uri = Uri.parse(getArguments().getString("uri"));
+
         try {
-            // Retrieve bitmap
             bitmap = MediaStore.Images.Media.getBitmap(
                     getActivity().getApplicationContext().getContentResolver(), uri);
             getActivity().getApplicationContext().getContentResolver().delete(
                     uri, null, null);
         } catch (IOException e) {
             e.printStackTrace();
+            showErrorDialog();
         }
 
         new ProcessingTask().execute();
     }
 
-    /* Handles heavy processing */
+    /* AyncTask to handle heavy processing */
     private class ProcessingTask extends AsyncTask<Void, String, Boolean> {
         private Mat mat;
 
         @Override
-        protected void onPreExecute() {
-            showProgressDialog(getResources().getString(R.string.processing));
-        }
+        protected void onPreExecute() { showProgressDialog(getResources().getString(R.string.processing)); }
 
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -192,7 +189,10 @@ public class PreprocessingFragment extends Fragment {
                 getBitmapAsByteArray(mat, "createBoxes");
                 mat.release();
                 dialog.dismiss();
-            } else notifyError();
+            } else {
+                dialog.dismiss();
+                showErrorDialog();
+            }
         }
     }
 
@@ -250,9 +250,9 @@ public class PreprocessingFragment extends Fragment {
         outputImage.setImageBitmap(bitmap);
     }
 
-    /* Converts colored image to grayscale (1 channel) then binary (black or white) */
+    /* Converts colored image to grayscale, then binary */
     private Mat grayToBW(Mat mat) {
-        // Convert mat from RGB color space to graycale
+        // Convert mat from RGB to graycale
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
 
         // Convert mat from grayscale to binary
@@ -262,36 +262,33 @@ public class PreprocessingFragment extends Fragment {
         return mat;
     }
 
-    /* Removes excess noise from binary image */
+    /* Removes excess noises from binary image */
     private Mat removeNoise(Mat mat) {
-        // Erosion thins the white objects in the image, eliminating small noise
+        // Eliminate small noises
         Imgproc.erode(mat, mat, Imgproc.getStructuringElement(
                 Imgproc.MORPH_ELLIPSE, new Size(5, 5)));
-        /*// Dilation widens the white objects in the image
-        Imgproc.dilate(mat, mat, Imgproc.getStructuringElement(
-                Imgproc.MORPH_ELLIPSE, new Size(7, 7)));*/
 
         return mat;
     }
 
-    /* Corrects skewness of binary image */
+    /* Straightens skewed image */
     private Mat correctSkew(Mat mat) {
         Mat mat_copy = mat.clone();
 
-        // Dilation widens the white objects in the image
+        // Return dots close to original size
         Imgproc.dilate(mat, mat, Imgproc.getStructuringElement(
                 Imgproc.MORPH_ELLIPSE, new Size(11, 11)));
-        // Exaggerates the white objects horizontally to connect them
+
+        // Exaggerate white objects horizontally to connect them
         Imgproc.dilate(mat_copy, mat_copy, Imgproc.getStructuringElement(
                 Imgproc.MORPH_ELLIPSE, new Size(29, 5)));
 
         Mat lines = new Mat();
 
-        // Looks for straight lines that match the parameters specified
+        // Look for straight lines that match the parameters specified
         Imgproc.HoughLinesP(mat_copy, lines, 1, Math.PI / 180, 50, mat_copy.width() / 2.f, 200);
 
         double angle = 0.0;
-
         for (int i = 0; i < lines.height(); i++) {
             for (int j = 0; j < lines.width(); j++) {
                 angle += Math.atan2(lines.get(i, j)[3] - lines.get(i, j)[1],
@@ -303,8 +300,10 @@ public class PreprocessingFragment extends Fragment {
             angle /= lines.size().area();
         angle = angle * 180 / Math.PI;
 
+        lines.release();
         mat_copy.release();
 
+        // Straigthen image using angle
         Mat rot_mat = Imgproc.getRotationMatrix2D(new Point(mat.width() / 2, mat.height() / 2),
                 angle, 1);
         Imgproc.warpAffine(mat, mat, rot_mat, mat.size(), Imgproc.INTER_CUBIC);
@@ -319,30 +318,40 @@ public class PreprocessingFragment extends Fragment {
         ArrayList<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
 
-        // Finds the contours (outer regions/edges) of every white object
+        // Find the contours (outer regions/edges) of every white object
         Imgproc.findContours(mat, contours, hierarchy, Imgproc.RETR_EXTERNAL,
                 Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
 
-        int area = 0;
+        // Get average area
+        int avg = 0;
         for (int i = 0; i < contours.size(); i++)
-            area += (int) Imgproc.moments(contours.get(i), false).get_m00();
-        area /= contours.size();
+            avg += (int) Imgproc.moments(contours.get(i), false).get_m00();
+        avg /= contours.size();
+
+        // Get standard deviation of dot areas to determine outliers
+        int var = 0;
+        for (int i = 0; i < contours.size(); i++)
+            var += Math.pow(((int) Imgproc.moments(contours.get(i), false).get_m00()) - avg, 2);
+        var /= contours.size();
+        int sd = (int) Math.sqrt(var);
 
         ArrayList<Point> centroids = new ArrayList<>();
         for (int i = 0; i < contours.size(); i++) {
             Moments p = Imgproc.moments(contours.get(i), false);
 
             // Exclude contours that are either too large or too small
-            if ((int) p.get_m00() > area / 2 && (int) p.get_m00() < area * 2 &&
+            if ((int) p.get_m00() > avg - sd && (int) p.get_m00() < avg + sd &&
                     (int) p.get_m00() != 0) {
-                // Finds the contour of the white objects
+                // Find the center of contour
                 int x = (int) (p.get_m10() / p.get_m00());
                 int y = (int) (p.get_m01() / p.get_m00());
 
-                if (x != 0 && y != 0)
-                    centroids.add(new Point(x, y));
+                // Exclude contours lying on the border
+                if (x != 0 && y != 0) centroids.add(new Point(x, y));
             }
         }
+
+        hierarchy.release();
 
         return centroids;
     }
@@ -362,34 +371,65 @@ public class PreprocessingFragment extends Fragment {
         }
     }
 
-    /* Computes average y-coordinates of centroids along the same row */
+    /* Computes for the average and standard deviation of an integer list */
+    private Pair<Integer, Integer> getAvgAndSD(ArrayList<Integer> lines) {
+        Collections.sort(lines);
+
+        int avg = 0;
+        for (int i = 1; i < lines.size(); i++)
+            avg += lines.get(i) - lines.get(i - 1);
+        avg /= lines.size() - 1;
+
+        int var = 0;
+        for (int i = 1; i < lines.size(); i++)
+            var += Math.pow((lines.get(i) - lines.get(i - 1)) - avg, 2);
+        var /= lines.size() - 1;
+
+        return Pair.create(avg, (int) Math.sqrt(var));
+    }
+
+    /* Computes for the average y-coordinate of centroids along the same row */
     private ArrayList<Integer> createHLines(ArrayList<Point> centroids) {
+        Mat mat = new Mat(processed.getWidth(), processed.getHeight(), CvType.CV_8U);
+        Utils.bitmapToMat(processed, mat);
+
+        ArrayList<Integer> yCoords = new ArrayList<>();
+        for (int i = 0; i < centroids.size(); i++)
+            yCoords.add((int) centroids.get(i).y);
+
+        // Maximum distance between y-coordinates to be considered co-row members
+        int max = getAvgAndSD(yCoords).second;
+        if (max < 5) max = 5;
+
+        System.out.println(max);
+
         ArrayList<Integer> hLines = new ArrayList<>();
 
-        int sum = (int) centroids.get(0).y;
+        int sum = yCoords.get(0);
         int cnt = 1;
         int avg = 0;
-
-        for (int i = 1; i < centroids.size(); i++) {
-            // Two consecutive centroids are considered to be along the same horizontal line
-            // if their y-coordinates have a difference of less than 5 (experimental)
-            if (centroids.get(i).y - centroids.get(i - 1).y < 5) {
-                sum += centroids.get(i).y;
+        for (int i = 1; i < yCoords.size(); i++) {
+            if (yCoords.get(i) - yCoords.get(i - 1) <= max) {
+                sum += yCoords.get(i);
                 cnt++;
 
-                if (i == centroids.size() - 1) {
+                if (i == yCoords.size() - 1) {
                     if (cnt > 1) {
                         avg = sum / cnt;
                         hLines.add(avg);
+                        Imgproc.line(mat, new Point(0, avg), new Point(mat.width(), avg),
+                                new Scalar(255));
                     }
                 }
             } else {
                 if (cnt > 1) {
                     avg = sum / cnt;
                     hLines.add(avg);
+                    Imgproc.line(mat, new Point(0, avg), new Point(mat.width(), avg),
+                            new Scalar(255));
                 }
 
-                sum = (int) centroids.get(i).y;
+                sum = yCoords.get(i);
                 cnt = 1;
             }
         }
@@ -400,8 +440,48 @@ public class PreprocessingFragment extends Fragment {
         hLines.clear();
         hLines.addAll(set);
 
+        getBitmapAsByteArray(mat, "createHLines");
+
         return hLines;
     }
+
+    /*ArrayList<Integer> distance = new ArrayList<>();
+        for (int i = 1; i < hLines.size(); i++)
+            distance.add(hLines.get(i) - hLines.get(i - 1));
+
+        Collections.sort(distance);
+
+        for (int i = 1; i < distance.size(); i++)
+            System.out.println(distance.get(i));
+
+        int median = (distance.size() - 1) / 2;
+        int q1 = distance.get((median - 1) / 2);
+        int q3 = distance.get((distance.size() - 1 + median + 1) / 2);
+        int iqr = q3 - q1;
+
+        if (distance.size() % 2 == 0) {
+            median = distance.size() / 2;
+            if (median % 2 == 1) {
+                q1 = distance.get((median - 1) / 2);
+                q3 = distance.get((distance.size() + median - 1) / 2);
+                iqr = q3 - q1;
+            } else {
+                q1 = (distance.get(median / 2) + distance.get((median / 2) - 1)) / 2;
+                q3 = (distance.get((distance.size() + median) / 2) +
+                        distance.get(((distance.size() + median) / 2) - 1)) / 2;
+                iqr = q3 - q1;
+            }
+        }
+
+        System.out.println(distance.size());
+        System.out.println(median);
+        System.out.println(q1);
+        System.out.println(q3);
+        System.out.println(iqr);
+
+        int minimum = q1 - ((int) ((float) iqr * 1.5));
+        int maximum = q3 + ((int) ((float) iqr * 1.5));
+        System.out.println(minimum + " " + maximum);*/
 
     /* Remove horizontal lines that are too near to each other */
     private ArrayList<Integer> removeDenseHLines(ArrayList<Integer> hLines) {
@@ -412,61 +492,14 @@ public class PreprocessingFragment extends Fragment {
 
         ArrayList<Integer> refinedHLines = new ArrayList<>();
 
-        ArrayList<Integer> copy = new ArrayList<>(hLines);
-        Collections.sort(copy);
-
-        int median = 0;
-        int q1 = 0;
-        int q3 = 0;
-        int iqr = 0;
-        if (copy.size() % 2 == 1) {
-            median = (copy.size() - 1) / 2;
-            q1 = (median - 1) / 2;
-            q3 = (copy.size() - 1 + median + 1) / 2;
-            iqr = copy.get(q3) - copy.get(q1);
-        } else {
-            median = copy.size() / 2;
-            if (median % 2 == 1) {
-                q1 = (median - 1) / 2;
-                q3 = (copy.size() + median - 1) / 2;
-                iqr = copy.get(q3) - copy.get(q1);
-            } else {
-                q1 = (copy.get(median / 2) + copy.get((median / 2) - 1)) / 2;
-                q3 = (copy.get((copy.size() + median) / 2) +
-                        copy.get(((copy.size() + median) / 2) - 1)) / 2;
-                iqr = q3 - q1;
-            }
-        }
-
-        int minimum = q1 - ((int) ((float) iqr * 1.5));
-        int maximum = q3 + ((int) ((float) iqr * 1.5));
-        System.out.println(minimum + " " + maximum);
-
-        int sum = 0;
-
-        // Get mean distance between all horizontal lines
-        for (int i = 1; i < hLines.size(); i++) {
-            System.out.println(hLines.get(i) - hLines.get(i - 1));
-            sum += hLines.get(i) - hLines.get(i - 1);
-        }
-        int avg = sum / (hLines.size() - 1);
+        int avg = getAvgAndSD(hLines).first;
+        int sd = getAvgAndSD(hLines).second;
 
         System.out.println("avg " + avg);
-
-        sum = 0;
-
-        // Get the variance and standard deviation of the distances between horizontal lines
-        for (int i = 1; i < hLines.size(); i++)
-            sum += Math.pow((hLines.get(i) - hLines.get(i - 1)) - avg, 2);
-        int var = sum / (hLines.size() - 1);
-        int sd = (int) Math.sqrt(var);
-
-        System.out.println("var " + var);
         System.out.println("sd " + sd);
 
-        sum = 0;
+        int sum = 0;
         int cnt = 0;
-
         // Get mean distance between horizontal lines within the same cell
         for (int i = 1; i < hLines.size(); i++) {
             if (hLines.get(i) - hLines.get(i - 1) > avg - sd &&
@@ -485,47 +518,54 @@ public class PreprocessingFragment extends Fragment {
         while (i < hLines.size()) {
             System.out.println(curr + " " + prev + " " + String.valueOf(curr - prev));
 
-            if (curr - prev > avg - 3) {
+            if (curr - prev > avg - 5) {
                 if (i == 1) {
+                    refinedHLines.add(prev);
                     Imgproc.line(mat, new Point(0, prev),
                             new Point(mat.width(), prev), new Scalar(255));
-                    Imgproc.line(mat, new Point(0, curr),
-                            new Point(mat.width(), curr), new Scalar(255));
-
-                    refinedHLines.add(prev);
-                    refinedHLines.add(curr);
-                } else {
-                    Imgproc.line(mat, new Point(0, curr),
-                            new Point(mat.width(), curr), new Scalar(255));
-
-                    refinedHLines.add(curr);
                 }
 
-                if (i + 1 > hLines.size() - 1) break;
-
-                prev = curr;
-                curr = hLines.get(i + 1);
+                refinedHLines.add(curr);
+                Imgproc.line(mat, new Point(0, curr),
+                        new Point(mat.width(), curr), new Scalar(255));
 
                 i++;
+
+                if (i > hLines.size() - 1) break;
+
+                prev = curr;
+                curr = hLines.get(i);
             } else {
+                sum = curr;
+                cnt = 1;
                 int j = i + 1;
                 for (; j < hLines.size(); j++) {
-                    if (hLines.get(j) - prev > avg - 3) {
-                        Imgproc.line(mat, new Point(0, hLines.get(j)),
-                                new Point(mat.width(), hLines.get(j)), new Scalar(255));
+                    sum += hLines.get(j);
+                    cnt++;
 
-                        refinedHLines.add(hLines.get(j));
+                    if (hLines.get(j) - prev > avg - 5) {
+                        if (i == 1) {
+                            refinedHLines.add(prev);
+                            Imgproc.line(mat, new Point(0, prev),
+                                    new Point(mat.width(), prev), new Scalar(255));
+                        }
+
+                        sum /= cnt;
+
+                        refinedHLines.add(sum);
+                        Imgproc.line(mat, new Point(0, sum),
+                                new Point(mat.width(), sum), new Scalar(255));
 
                         break;
                     }
                 }
 
-                if (j + 1 > hLines.size() - 1) break;
+                i = j + 1;
+
+                if (i > hLines.size() - 1) break;
 
                 prev = hLines.get(j);
-                curr = hLines.get(j + 1);
-
-                i = j + 1;
+                curr = hLines.get(i);
             }
         }
 
@@ -551,23 +591,35 @@ public class PreprocessingFragment extends Fragment {
 
     /* Computes average x-coordinates of centroids along the same column */
     private ArrayList<Integer> createVLines(ArrayList<Point> centroids) {
+        Mat mat = new Mat(processed.getWidth(), processed.getHeight(), CvType.CV_8U);
+        Utils.bitmapToMat(processed, mat);
+
+        ArrayList<Integer> xCoords = new ArrayList<>();
+        for (int i = 0; i < centroids.size(); i++)
+            xCoords.add((int) centroids.get(i).x);
+
+        // Maximum distance between x-coordinates to be considered co-column members
+        int max = getAvgAndSD(xCoords).second;
+        if (max < 5) max = 5;
+
+        System.out.println(max);
+
         ArrayList<Integer> vLines = new ArrayList<>();
 
-        int sum = (int) centroids.get(0).x;
+        int sum = xCoords.get(0);
         int cnt = 1;
         int avg = 0;
-
-        for (int i = 1; i < centroids.size(); i++) {
-            // Two consecutive centroids are considered to be along the same vertical line
-            // if their x-coordinates have a difference of less than 5 (experimental)
-            if (centroids.get(i).x - centroids.get(i - 1).x < 5) {
-                sum += (int) centroids.get(i).x;
+        for (int i = 1; i < xCoords.size(); i++) {
+            if (xCoords.get(i) - xCoords.get(i - 1) <= max) {
+                sum += xCoords.get(i);
                 cnt++;
 
-                if (i == centroids.size() - 1) {
+                if (i == xCoords.size() - 1) {
                     if (cnt > 1) {
                         avg = sum / cnt;
                         vLines.add(avg);
+                        Imgproc.line(mat, new Point(avg, 0), new Point(avg, mat.height()),
+                                new Scalar(255));
                     }
                 }
             }
@@ -575,12 +627,18 @@ public class PreprocessingFragment extends Fragment {
                 if (cnt > 1) {
                     avg = sum / cnt;
                     vLines.add(avg);
+                    Imgproc.line(mat, new Point(avg, 0), new Point(avg, mat.height()),
+                            new Scalar(255));
                 }
 
-                sum = (int) centroids.get(i).x;
+                sum = xCoords.get(i);
                 cnt = 1;
 
-                if (i == centroids.size() - 1) vLines.add(sum);
+                if (i == centroids.size() - 1) {
+                    vLines.add(sum);
+                    Imgproc.line(mat, new Point(avg, 0), new Point(avg, mat.height()),
+                            new Scalar(255));
+                }
             }
         }
 
@@ -590,39 +648,28 @@ public class PreprocessingFragment extends Fragment {
         vLines.clear();
         vLines.addAll(set);
 
+        getBitmapAsByteArray(mat, "createVLines");
+
         return vLines;
     }
 
     /* Removes vertical lines that are too near to each other */
     private ArrayList<Integer> removeDenseVLines(ArrayList<Integer> vLines) {
+        Mat mat = new Mat(processed.getWidth(), processed.getHeight(), CvType.CV_8U);
+        Utils.bitmapToMat(processed, mat);
+
         System.out.println("removeDenseVLines");
 
         ArrayList<Integer> refinedVLines = new ArrayList<>();
 
-        int sum = 0;
-
-        for (int i = 1; i < vLines.size(); i++) {
-            System.out.println(vLines.get(i) - vLines.get(i - 1));
-            sum += vLines.get(i) - vLines.get(i - 1);
-        }
-        int avg = sum / (vLines.size() - 1);
+        int avg = getAvgAndSD(vLines).first;
+        int sd = getAvgAndSD(vLines).second;
 
         System.out.println("avg " + avg);
-
-        sum = 0;
-
-        // Get the variance and standard deviation of the distances between horizontal lines
-        for (int i = 1; i < vLines.size(); i++)
-            sum += Math.pow((vLines.get(i) - vLines.get(i - 1)) - avg, 2);
-        int var = sum / (vLines.size() - 1);
-        int sd = (int) Math.sqrt(var);
-
-        System.out.println("var " + var);
         System.out.println("sd " + sd);
 
-        sum = 0;
+        int sum = 0;
         int cnt = 0;
-
         // Get mean distance between horizontal lines within the same cell
         for (int i = 1; i < vLines.size(); i++) {
             if (vLines.get(i) - vLines.get(i - 1) > avg - sd &&
@@ -639,37 +686,59 @@ public class PreprocessingFragment extends Fragment {
         int prev = vLines.get(i - 1);
         int curr = vLines.get(i);
         while (i < vLines.size()) {
-            if (curr - prev > avg - 3) {
+            if (curr - prev > avg - 5) {
                 if (i == 1) {
                     refinedVLines.add(prev);
-                    refinedVLines.add(curr);
-                } else refinedVLines.add(curr);
+                    Imgproc.line(mat, new Point(prev, 0), new Point(prev, mat.height()),
+                            new Scalar(255));
+                }
 
-                if (i + 1 > vLines.size() - 1) break;
-
-                prev = curr;
-                curr = vLines.get(i + 1);
+                refinedVLines.add(curr);
+                Imgproc.line(mat, new Point(curr, 0), new Point(curr, mat.height()),
+                        new Scalar(255));
 
                 i++;
+
+                if (i > vLines.size() - 1) break;
+
+                prev = curr;
+                curr = vLines.get(i);
             }
             else {
+                sum = curr;
+                cnt = 1;
                 int j = i + 1;
                 for (; j < vLines.size(); j++) {
-                    if (vLines.get(j) - prev > avg - 3) {
-                        refinedVLines.add(vLines.get(j));
+                    sum += vLines.get(j);
+                    cnt++;
+
+                    if (vLines.get(j) - prev > avg - 5) {
+                        if (i == 1) {
+                            refinedVLines.add(prev);
+                            Imgproc.line(mat, new Point(prev, 0), new Point(prev, mat.height()),
+                                    new Scalar(255));
+                        }
+
+                        sum /= cnt;
+
+                        refinedVLines.add(sum);
+                        Imgproc.line(mat, new Point(sum, 0),
+                                new Point(sum, mat.height()), new Scalar(255));
 
                         break;
                     }
                 }
 
-                if (j + 1 > vLines.size() - 1) break;
+                i = j + 1;
+
+                if (i > vLines.size() - 1) break;
 
                 prev = vLines.get(j);
-                curr = vLines.get(j + 1);
-
-                i = j + 1;
+                curr = vLines.get(i);
             }
         }
+
+        getBitmapAsByteArray(mat, "removeDenseVLines");
 
         return refinedVLines;
     }
@@ -683,30 +752,14 @@ public class PreprocessingFragment extends Fragment {
 
         ArrayList<Integer> finalVLines = new ArrayList<>();
 
-        int sum = 0;
-
-        for (int i = 1; i < refinedVLines.size(); i++) {
-            System.out.println(refinedVLines.get(i) - refinedVLines.get(i - 1));
-            sum += refinedVLines.get(i) - refinedVLines.get(i - 1);
-        }
-        int avg = sum / (refinedVLines.size() - 1);
+        int avg = getAvgAndSD(refinedVLines).first;
+        int sd = getAvgAndSD(refinedVLines).second;
 
         System.out.println("avg " + avg);
-
-        sum = 0;
-
-        // Get the variance and standard deviation of the distances between vertical lines
-        for (int i = 1; i < refinedVLines.size(); i++)
-            sum += Math.pow((refinedVLines.get(i) - refinedVLines.get(i - 1)) - avg, 2);
-        int var = sum / (refinedVLines.size() - 1);
-        int sd = (int) Math.sqrt(var);
-
-        System.out.println("var " + var);
         System.out.println("sd " + sd);
 
-        sum = 0;
+        int sum = 0;
         int cnt = 0;
-
         // Get mean distance between vertical lines within the same cell
         for (int i = 1; i < refinedVLines.size(); i++) {
             if (refinedVLines.get(i) - refinedVLines.get(i - 1) > avg - sd &&
@@ -721,7 +774,6 @@ public class PreprocessingFragment extends Fragment {
 
         sum = 0;
         cnt = 0;
-
         // Get mean horizontal distance between cells
         for (int i = 1; i < refinedVLines.size(); i++) {
             if (refinedVLines.get(i) - refinedVLines.get(i - 1) < avg + sd + 5 &&
@@ -734,6 +786,7 @@ public class PreprocessingFragment extends Fragment {
 
         System.out.println("distBwC " + distBwC);
 
+        // Check if vertical lines start improperly
         if (refinedVLines.get(1) - refinedVLines.get(0) >
                 refinedVLines.get(2) - refinedVLines.get(1)) {
             Imgproc.line(mat, new Point(refinedVLines.get(0) - distBwD, 0),
@@ -778,7 +831,6 @@ public class PreprocessingFragment extends Fragment {
             }
             else {
                 if (refinedVLines.get(i) - refinedVLines.get(i - 1) < distBwD + 5) dot = true;
-                else dot = false;
 
                 if (i == 1) {
                     Imgproc.line(mat, new Point(refinedVLines.get(0), 0),
@@ -837,12 +889,6 @@ public class PreprocessingFragment extends Fragment {
 
         dialog = builder.build();
         dialog.show();
-    }
-
-    /* Notifies user of error */
-    private void notifyError() {
-        dialog.dismiss();
-        showErrorDialog();
     }
 
     /* Displays error dialog */
