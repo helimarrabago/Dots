@@ -67,6 +67,8 @@ public class TranslationFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
+
         if (bitmap != null) {
             bitmap.recycle();
             bitmap = null;
@@ -78,8 +80,6 @@ public class TranslationFragment extends Fragment {
         }
 
         System.gc();
-
-        super.onDestroy();
     }
 
     /* Initializes view and variables */
