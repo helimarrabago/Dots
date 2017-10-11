@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
-    tools:context="capstone.dots.CameraActivity">
+    tools:context="capstone.dots.CameraActivity"
+    android:id="@+id/activity_tilt_ball">
     <FrameLayout
         android:id="@+id/surface"
         android:layout_width="wrap_content"
@@ -16,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </FrameLayout>
-    <FrameLayout
+    <!--<FrameLayout
         android:layout_width="@dimen/accelerometer_hw"
         android:layout_height="@dimen/accelerometer_hw"
         android:layout_alignParentBottom="true"
@@ -29,7 +30,26 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textColor="@android:color/white"/>
-    </FrameLayout>
+    </FrameLayout>-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="68dp"
+            android:layout_height="72dp"
+            android:src="@drawable/circle"
+            android:id="@+id/imageView"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="20dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/test"/>
+
+    </RelativeLayout>
     <ImageButton
         android:id="@+id/capture"
         android:layout_height="@dimen/capture_hw"

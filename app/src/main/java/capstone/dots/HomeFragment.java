@@ -67,7 +67,7 @@ public class HomeFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Intent intent = new Intent(getActivity(), ProcessingActivity.class);
+            Intent intent = new Intent(getActivity(), TranslateActivity.class);
             intent.putExtra("Data", data);
             startActivity(intent);
         }

@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * Created by Helimar Rabago on 12 Jul 2017.
  */
 
-public class ProcessingActivity extends AppCompatActivity implements IProcessing {
+public class TranslateActivity extends AppCompatActivity implements IProcessing {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +44,7 @@ public class ProcessingActivity extends AppCompatActivity implements IProcessing
 
     /* Sends image to preprocessing up to cell recognition */
     private void preprocessImage(Uri uri) {
-        PreprocessingFragment fragment = new PreprocessingFragment();
+        ProcessingFragment fragment = new ProcessingFragment();
         Bundle bundle = new Bundle();
         bundle.putString("uri", uri.toString());
         fragment.setArguments(bundle);

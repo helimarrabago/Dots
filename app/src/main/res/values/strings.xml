@@ -4,6 +4,7 @@
     <string name="gallery_caption">Touch to proceed to gallery</string>
     <string name="processing">Processing image…</string>
     <string name="translate">Translating image…</string>
+    <string name="capturing">Capturing image…</string>
     <string name="processing_error">An error occurred during processing :-(</string>
     <string name="translate_error">An error occurred during translation :-(</string>
     <string name="okay">Okay</string>

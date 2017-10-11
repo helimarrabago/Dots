@@ -45,7 +45,7 @@ import java.util.List;
  * Created by helimarrabago on 7/31/17.
  */
 
-public class PreprocessingFragment extends Fragment {
+public class ProcessingFragment extends Fragment {
     private View view;
     private ImageView outputImage;
     private Bitmap bitmap;
@@ -71,7 +71,7 @@ public class PreprocessingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_preprocessing, container, false);
+        view = inflater.inflate(R.layout.fragment_processing, container, false);
         init();
 
         return view;

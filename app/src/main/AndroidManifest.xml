@@ -30,7 +30,7 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".ProcessingActivity"
+            android:name=".TranslateActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustNothing"
             android:screenOrientation="portrait"/>
