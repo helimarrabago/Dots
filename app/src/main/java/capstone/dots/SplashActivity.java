@@ -29,8 +29,8 @@ public class SplashActivity extends AwesomeSplash {
         configSplash.setRevealFlagX(Flags.REVEAL_RIGHT);
         configSplash.setRevealFlagY(Flags.REVEAL_BOTTOM);
 
-        // Customize logo
-        configSplash.setLogoSplash(R.drawable.logo);
+        // Customize im_logo
+        configSplash.setLogoSplash(R.drawable.im_logo);
         configSplash.setAnimLogoSplashDuration(2000);
         configSplash.setAnimLogoSplashTechnique(Techniques.FadeInDown);
 

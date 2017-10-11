@@ -45,6 +45,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.util.TypedValue;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -53,7 +54,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -276,34 +276,36 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         }
     }
 
-    private TextView acceleration;
     private FrameLayout surface;
     private CameraGuideView guide;
-
-    // Levelling guide
-
-    ImageView myImageView = null;
-    TextView testView = null;
-
-    BallView mBallView = null;
-    Handler RedrawHandler = new Handler();
-    Timer mTmr = null;
-    TimerTask mTsk = null;
-    float mBallPosX, mBallPosY, mBallSpdX, mBallSpdY;
-    int rad = 15;
-
-    int x = 0;
-    int y = 0;
-    float centerYOnImage, centerXOnImage;
-    float resX, resY;
-
-        // Levelling guide
+    private ImageView myImageView;
+    private BallView mBallView;
+    private Handler redrawHandler;
+    private Timer mTmr;
+    private TimerTask mTsk;
+    private float mBallPosX;
+    private float mBallPosY;
+    private float mBallSpdX;
+    private float mBallSpdY;
+    private int rad = 15;
+    private int x = 0;
+    private int y = 0;
+    private float centerYOnImage;
+    private float centerXOnImage;
+    private float resX;
+    private float resY;
+    private MaterialDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
+        init();
+    }
+
+    /* Initialize views and variables */
+    private void init() {
         SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
         Sensor accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
@@ -314,60 +316,46 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
         mStillImageButton.setOnClickListener(onClickCapture());
 
-        final RelativeLayout mainView = findViewById(R.id.activity_tilt_ball);
-        myImageView = findViewById(R.id.imageView);
+        redrawHandler = new Handler();
 
-        Drawable d = getResources().getDrawable(R.drawable.circle);
-        centerXOnImage = d.getIntrinsicHeight() / 2;
-        centerYOnImage = d.getIntrinsicWidth() / 2;
+        RelativeLayout mainView = findViewById(R.id.main_view);
+        myImageView = findViewById(R.id.guide);
 
-        myImageView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            public void onGlobalLayout() {
-                myImageView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        Drawable d = ContextCompat.getDrawable(this, R.drawable.im_circle);
+        centerXOnImage = d.getIntrinsicWidth() / 2;
+        centerYOnImage = d.getIntrinsicHeight() / 2;
 
-                int[] locations = new int[2];
-                myImageView.getLocationOnScreen(locations);
-                x = locations[0]; // x --- location of image on screen
-                y = locations[1]; // y --- location of image on screen
-                resX = centerXOnImage + x; // x --- center of image
-                resY = centerYOnImage + y; // y --- center of image
-
-            }
-        });
+        myImageView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener());
 
         mBallPosX = resX;
         mBallPosY = resY;
 
-        mBallView = new BallView(this,mBallPosX,mBallPosY,rad);
+        mBallView = new BallView(this, mBallPosX, mBallPosY, rad);
 
         mainView.addView(mBallView);
         mBallView.invalidate();
+    }
 
-        /*((SensorManager)getSystemService(Context.SENSOR_SERVICE)).registerListener(
-                new SensorEventListener() {
-                    @Override
-                    public void onSensorChanged(SensorEvent event) {
+    private ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener() {
+        return new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                myImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
+                int[] locations = new int[2];
+                myImageView.getLocationOnScreen(locations);
+                x = locations[0]; // x location of image on screen
+                y = locations[1]; // y location of image on screen
 
-                    }
-                    @Override
-                    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-                },
-                ((SensorManager)getSystemService(Context.SENSOR_SERVICE))
-                        .getSensorList(Sensor.TYPE_ACCELEROMETER).get(0), SensorManager.SENSOR_DELAY_NORMAL);*/
-
+                resX = centerXOnImage + x; // x center of image
+                resY = centerYOnImage + y; // y center of image
+            }
+        };
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        System.runFinalizersOnExit(true);
-        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     private View.OnClickListener onClickCapture() {
@@ -376,7 +364,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
             public void onClick(View view) {
                 createImageFileName();
                 takePicture();
-                //sendImage();
             }
         };
     }
@@ -399,8 +386,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
             startActivity(intent);
         }
     }
-
-    private MaterialDialog dialog;
 
     private void cropCameraPicture() {
         Uri mFileUri = FileProvider.getUriForFile(
@@ -548,33 +533,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onResume() {
-        //create timer to move ball to new position
-        mTmr = new Timer();
-        mTsk = new TimerTask() {
-            public void run() {
-
-                //move ball based on current speed
-                mBallPosX = (float)(resX + (mBallSpdX  / 2 * 300 * 0.1 )) - rad;
-                mBallPosY = (float)(resY + (mBallSpdY / 2 * 300 * 0.1)) - rad;
-
-
-                //update ball class instance
-                mBallView.mX = mBallPosX;
-                mBallView.mY = mBallPosY;
-
-
-                //redraw ball. Must run in background thread to prevent thread lock.
-                RedrawHandler.post(new Runnable() {
-                    public void run() {
-                        mBallView.invalidate();
-                        testView.setText(String.valueOf((int)mBallPosX) + " " + String.valueOf((int)mBallPosY) +
-                                "\n" + centerXOnImage + "\n" + centerYOnImage +
-                                "\n" + resX + " " + resY);
-                    }});
-            }};
-
-        mTmr.schedule(mTsk,8,8);
         super.onResume();
+
         startBackgroundThread();
 
         // When the screen is turned off and turned back on, the SurfaceTexture is already
@@ -586,16 +546,41 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
+
+        // Create timer to move ball to new position
+        mTmr = new Timer();
+        mTsk = new TimerTask() {
+            public void run() {
+                float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20,
+                        getResources().getDisplayMetrics());
+                // Move ball based on current speed
+                mBallPosX = (float) (resX + (mBallSpdX * 75 * 0.1)) - rad;
+                mBallPosY = (float) (resY + (mBallSpdY * 75 * 0.1)) - rad - px;
+
+                // Update ball class instance
+                mBallView.mX = mBallPosX;
+                mBallView.mY = mBallPosY;
+
+                // Redraw ball, must run in background thread to prevent thread lock
+                redrawHandler.post(new Runnable() {
+                    public void run() {
+                        mBallView.invalidate();
+                    }});
+            }};
+
+        mTmr.schedule(mTsk, 8, 8);
     }
 
     @Override
     public void onPause() {
+        super.onPause();
+
         closeCamera();
-        mTmr.cancel(); //kill\release timer (our only background thread)
+        stopBackgroundThread();
+
+        mTmr.cancel();
         mTmr = null;
         mTsk = null;
-        stopBackgroundThread();
-        super.onPause();
     }
 
     private void requestCameraPermission() {
@@ -1010,10 +995,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        /*acceleration.setText("X: "+ (int)sensorEvent.values[0] +
-                "\nY: "+ (int) sensorEvent.values[1]);*/
-        mBallSpdX = -sensorEvent.values[0];
-        mBallSpdY = sensorEvent.values[1];
+        mBallSpdX = sensorEvent.values[0];
+        mBallSpdY = -sensorEvent.values[1];
     }
 
     @Override

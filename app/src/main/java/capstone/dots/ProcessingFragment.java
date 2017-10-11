@@ -55,16 +55,16 @@ public class ProcessingFragment extends Fragment {
     private ArrayList<Integer> finalVLines;
     private String filename;
     private MaterialDialog dialog;
-    private IProcessing in;
+    private ITranslator in;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        if (!(context instanceof IProcessing))
-            throw new ClassCastException("Activity must implement IProcessing");
+        if (!(context instanceof ITranslator))
+            throw new ClassCastException("Activity must implement ITranslator");
 
-        this.in = (IProcessing) context;
+        this.in = (ITranslator) context;
     }
 
     @Override

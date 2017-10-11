@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
-    tools:context="capstone.dots.CameraActivity"
-    android:id="@+id/activity_tilt_ball">
+    android:background="@color/colorPrimaryDark">
     <FrameLayout
         android:id="@+id/surface"
         android:layout_width="wrap_content"
@@ -17,39 +15,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </FrameLayout>
-    <!--<FrameLayout
-        android:layout_width="@dimen/accelerometer_hw"
-        android:layout_height="@dimen/accelerometer_hw"
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="@dimen/accelerometer_margin"
-        android:layout_marginBottom="@dimen/accelerometer_margin">
-        <TextView
-            android:id="@+id/accelerometer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="@android:color/white"/>
-    </FrameLayout>-->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
+        android:layout_margin="@dimen/accelerometer_margin">
         <ImageView
-            android:layout_width="68dp"
-            android:layout_height="72dp"
-            android:src="@drawable/circle"
-            android:id="@+id/imageView"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="20dp"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/test"/>
-
-    </RelativeLayout>
+            android:id="@+id/guide"
+            android:layout_width="@dimen/accelerometer_w"
+            android:layout_height="@dimen/accelerometer_h"
+            android:src="@mipmap/im_circle"/>
+    </FrameLayout>
     <ImageButton
         android:id="@+id/capture"
         android:layout_height="@dimen/capture_hw"

@@ -42,7 +42,7 @@ public class CameraGuideView extends View {
         initPaint();
 
         int ltrH = (int) (h * 0.9);
-        int ltrW = (int) ((h * 0.9) * 0.7);
+        int ltrW = (int) ((h * 0.9) * 0.69545);
 
         t = (h - ltrH) / 2;
         b = t + ltrH;

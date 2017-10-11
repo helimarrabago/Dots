@@ -8,6 +8,6 @@ import java.util.ArrayList;
  * Created by helimarrabago on 7/31/17.
  */
 
-public interface IProcessing {
+public interface ITranslator {
     void translateImage(Uri uri, ArrayList<Integer> finalHLines, ArrayList<Integer> finalVLines);
 }

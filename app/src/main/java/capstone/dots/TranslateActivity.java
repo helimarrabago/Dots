@@ -17,7 +17,7 @@ import java.util.ArrayList;
  * Created by Helimar Rabago on 12 Jul 2017.
  */
 
-public class TranslateActivity extends AppCompatActivity implements IProcessing {
+public class TranslateActivity extends AppCompatActivity implements ITranslator {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
