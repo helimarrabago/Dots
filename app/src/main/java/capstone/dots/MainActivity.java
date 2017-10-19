@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -51,25 +52,31 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setTabGravity(TabLayout.GRAVITY_CENTER);
         tabLayout.setTabMode(TabLayout.MODE_FIXED);
 
-        createAppFolder();
+        createAppFolders();
 
         System.loadLibrary("opencv_java3");
     }
 
-    /* Creates application-specific folder */
-    private void createAppFolder() {
-        File mFolder = new File(ScanConstants.IMAGE_PATH);
+    /* Creates application-specific folders */
+    private void createAppFolders() {
+        File folder = new File(ScanConstants.IMAGE_PATH);
 
         boolean success = false;
-        if (!mFolder.exists()) success = mFolder.mkdirs();
+        if (!folder.exists()) success = folder.mkdirs();
+        if (!success) Log.e("Error", "Failed to create Dots folder.");
 
-        if (success) {
-            File mSub1 = new File(ScanConstants.IMAGE_PATH, "Images");
-            File mSub2 = new File(ScanConstants.IMAGE_PATH, "Translations");
+        folder = new File(ScanConstants.IMAGE_PATH, "Images");
 
-            if (!mSub1.exists()) mSub1.mkdir();
-            if (!mSub2.exists()) mSub2.mkdir();
-        }
+        if (!folder.exists()) success = folder.mkdir();
+        if (!success) Log.e("Error", "Failed to create Images folder.");
+
+        folder = new File(ScanConstants.IMAGE_PATH, "Translations");
+        if (!folder.exists()) success = folder.mkdir();
+        if (!success) Log.e("Error", "Failed to create Translations folder.");
+
+        folder = new File(ScanConstants.IMAGE_PATH, "Processed Images");
+        if (!folder.exists()) success = folder.mkdir();
+        if (!success) Log.e("Error", "Failed to create Processed Images folder.");
     }
 
     /* Opens the Help Me screen */
@@ -83,10 +90,6 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     private class SectionsPagerAdapter extends FragmentPagerAdapter {
         private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -94,20 +97,18 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position) {
                 case 0:
                     return new HomeFragment();
                 case 1:
                     return new HistoryFragment();
             }
+
             return null;
         }
 
         @Override
         public int getCount() {
-            // Show 2 total pages.
             return 2;
         }
 
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     return "Translations";
             }
+
             return null;
         }
     }

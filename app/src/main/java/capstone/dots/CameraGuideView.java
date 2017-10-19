@@ -5,10 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.support.v4.content.ContextCompat;
+import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -34,8 +35,26 @@ public class CameraGuideView extends View {
         this.w = w;
     }
 
+    public CameraGuideView(Context context) {
+        super(context);
+
+        this.context = context;
+    }
+
+    public CameraGuideView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+
+        this.context = context;
+    }
+
+    public CameraGuideView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+
+        this.context = context;
+    }
+
     @Override
-    protected void onDraw(Canvas canvas) { // Override the onDraw() Method
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         initPaint();
@@ -69,8 +88,8 @@ public class CameraGuideView extends View {
         paintBorder.setAntiAlias(true);
     }
 
-    public HashMap<Integer, PointF> getPoints() {
-        List<PointF> points = new ArrayList<PointF>();
+    public SparseArray<PointF> getPoints() {
+        List<PointF> points = new ArrayList<>();
         points.add(new PointF(l, t));
         points.add(new PointF(r, t));
         points.add(new PointF(l, b));
@@ -79,7 +98,7 @@ public class CameraGuideView extends View {
         return getOrderedPoints(points);
     }
 
-    public HashMap<Integer, PointF> getOrderedPoints(List<PointF> points) {
+    public SparseArray<PointF> getOrderedPoints(List<PointF> points) {
         PointF centerPoint = new PointF();
 
         int size = points.size();
@@ -88,7 +107,7 @@ public class CameraGuideView extends View {
             centerPoint.y += pointF.y / size;
         }
 
-        HashMap<Integer, PointF> orderedPoints = new HashMap<>();
+        SparseArray<PointF> orderedPoints = new SparseArray<>();
         for (PointF pointF : points) {
             int index = -1;
 

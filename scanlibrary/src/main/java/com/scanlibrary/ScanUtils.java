@@ -11,6 +11,7 @@ import java.io.IOException;
 /**
  * Created by jhansi on 05/04/15.
  */
+
 public class ScanUtils {
     public static Uri getUri(Context context, Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -23,5 +24,12 @@ public class ScanUtils {
 
     public static Bitmap getBitmap(Context context, Uri uri) throws IOException {
         return MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+    }
+
+    public static byte[] getByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+
+        return bytes.toByteArray();
     }
 }

@@ -36,8 +36,8 @@ public class BackgroundFragment extends Fragment {
                 R.id.b9};
 
         ArrayList<TextView> letters = new ArrayList<>();
-        for (int i = 0; i < ids.length; i++) {
-            TextView text = view.findViewById(ids[i]);
+        for (int id : ids) {
+            TextView text = view.findViewById(id);
             letters.add(text);
         }
 

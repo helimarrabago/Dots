@@ -2,8 +2,12 @@ package capstone.dots;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -12,9 +16,12 @@ import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -44,6 +51,8 @@ import java.util.HashMap;
 
 public class TranslationActivity extends AppCompatActivity {
     private EditText output;
+    private ImageView imageView;
+    private FrameLayout sourceFrame;
     private MaterialDialog dialog;
     private ArrayList<Integer> finalHLines;
     private ArrayList<Integer> finalVLines;
@@ -80,13 +89,17 @@ public class TranslationActivity extends AppCompatActivity {
     /* Initializes view and variables */
     private void init() {
         output = findViewById(R.id.output);
+        imageView = findViewById(R.id.image_view);
+        sourceFrame = findViewById(R.id.source_frame);
         ImageButton cancelButton = findViewById(R.id.cancel_button);
         ImageButton proceedButton = findViewById(R.id.proceed_button);
+        ImageButton switchButton = findViewById(R.id.switch_button);
 
         output.setText("", TextView.BufferType.SPANNABLE);
 
         cancelButton.setOnClickListener(onClickCancel());
         proceedButton.setOnClickListener(onClickProceed());
+        switchButton.setOnClickListener(onClickSwitch());
 
         Uri uri = null;
         Bundle extras = getIntent().getExtras();
@@ -101,17 +114,43 @@ public class TranslationActivity extends AppCompatActivity {
 
         filename = ((Filename) this.getApplication()).getGlobalFilename();
 
+        String dir = ScanConstants.IMAGE_PATH + File.separator + "Processed Images" +
+                File.separator;
+        File image = new File(dir + filename + ".jpg");
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        final Bitmap processed = BitmapFactory.decodeFile(image.getAbsolutePath(), options);
+
+        imageView.post(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap scaledBitmap = scaledBitmap(
+                        processed, sourceFrame.getWidth(), sourceFrame.getHeight());
+                imageView.setImageBitmap(scaledBitmap);
+            }
+        });
+
         try {
-            bitmap = ScanUtils.getBitmap(this, uri);
+            if (uri != null) {
+                bitmap = ScanUtils.getBitmap(this, uri);
+                getContentResolver().delete(uri, null, null);
+
+                Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8U);
+                Utils.bitmapToMat(bitmap, mat);
+                Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+
+                new TranslationTask().execute(mat);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-        Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8U);
-        Utils.bitmapToMat(bitmap, mat);
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+    private Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
+        Matrix m = new Matrix();
+        m.setRectToRect(new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight()),
+                new RectF(0, 0, width, height), Matrix.ScaleToFit.CENTER);
 
-        new TranslationTask().execute(mat);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
     private class TranslationTask extends AsyncTask<Mat, String, Boolean> {
@@ -161,7 +200,9 @@ public class TranslationActivity extends AppCompatActivity {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String html = Html.toHtml(output.getText());
+                @SuppressWarnings("deprecation") String html = Html.toHtml(output.getText());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                    html = Html.toHtml(output.getText(), Html.FROM_HTML_MODE_LEGACY);
 
                 File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Translations",
                         filename + ".txt");
@@ -177,6 +218,17 @@ public class TranslationActivity extends AppCompatActivity {
                 Intent intent = new Intent(TranslationActivity.this, MainActivity.class);
                 intent.putExtra("fragment", 1);
                 startActivity(intent);
+            }
+        };
+    }
+
+    private View.OnClickListener onClickSwitch() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (sourceFrame.getVisibility() == View.INVISIBLE)
+                    sourceFrame.setVisibility(View.VISIBLE);
+                else sourceFrame.setVisibility(View.INVISIBLE);
             }
         };
     }
@@ -258,7 +310,7 @@ public class TranslationActivity extends AppCompatActivity {
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(this.getAssets().open(str)));
 
-                String line = "";
+                String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(" ");
                     if (parts.length == 2)
@@ -384,7 +436,7 @@ public class TranslationActivity extends AppCompatActivity {
             String segment = decimal.get(i);
             String output = segment;
 
-            System.out.println(segment);
+            //System.out.println(segment);
 
             if (!segment.equals("\n") && !segment.equals("     ") && !segment.equals(" ")) {
                 output = translateDecimal(segment);
@@ -410,7 +462,7 @@ public class TranslationActivity extends AppCompatActivity {
                 }
             }
 
-            System.out.println(output);
+            //System.out.println(output);
 
             translation.add(output);
         }
@@ -637,7 +689,10 @@ public class TranslationActivity extends AppCompatActivity {
                                 @NonNull DialogAction dialogAction) {
                 File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
                         filename + ".jpg");
-                file.delete();
+
+                boolean success = file.delete();
+                if (!success) Log.e("Error", "Failed to delete image currently opened.");
+
                 finish();
             }
         };

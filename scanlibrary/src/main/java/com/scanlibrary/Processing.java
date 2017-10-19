@@ -1,6 +1,7 @@
 package com.scanlibrary;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.util.Pair;
 
 import org.opencv.android.Utils;
@@ -44,7 +45,13 @@ class Processing {
         try {
             File file = new File(
                     ScanConstants.IMAGE_PATH, filename + ".jpg");
-            if (!file.exists()) file.createNewFile();
+
+            boolean success = false;
+            if (file.exists()) success = file.delete();
+            if (!success) Log.e("Error", "Failed to delete reference image.");
+
+            success = file.createNewFile();
+            if (!success) Log.e("Error", "Failed to save reference image.");
 
             OutputStream out = new FileOutputStream(file);
             out.write(byteArray);

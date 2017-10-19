@@ -6,6 +6,6 @@ import android.net.Uri;
  * Created by jhansi on 04/04/15.
  */
 
-public interface IScanner {
+interface IScanner {
     void onBitmapSelect(Uri uri);
 }

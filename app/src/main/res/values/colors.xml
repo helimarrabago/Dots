@@ -6,4 +6,5 @@
     <color name="black_transparent">#80000000</color>
     <color name="background">#EEF2F4</color>
     <color name="wrong">#BD3336</color>
+    <color name="gray">#949494</color>
 </resources>

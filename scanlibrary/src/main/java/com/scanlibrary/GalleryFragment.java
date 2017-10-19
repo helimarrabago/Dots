@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -72,7 +73,7 @@ public class GalleryFragment extends Fragment {
                 if (requestCode == ScanConstants.PICKFILE_REQUEST_CODE) {
                     bitmap = getBitmap(data.getData());
                     byte[] byteArray = getBitmapAsByteArray(bitmap);
-                    createImageFile(byteArray);
+                    saveImage(byteArray);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -89,14 +90,17 @@ public class GalleryFragment extends Fragment {
         return stream.toByteArray();
     }
 
-    private void createImageFile(byte[] byteArray) {
+    private void saveImage(byte[] byteArray) {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         ((Filename) this.getActivity().getApplication()).setGlobalFilename(timestamp);
 
         try {
             File file = new File(
                     ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
-            if (!file.exists()) file.createNewFile();
+
+            boolean success = false;
+            if (!file.exists()) success = file.createNewFile();
+            if (!success) Log.e("Error", "Failed to save image from gallery.");
 
             OutputStream out = new FileOutputStream(file);
             out.write(byteArray);
@@ -120,6 +124,6 @@ public class GalleryFragment extends Fragment {
                 getActivity().getContentResolver().openAssetFileDescriptor(selectedImg, "r");
 
         return BitmapFactory.decodeFileDescriptor(
-                fileDescriptor.getFileDescriptor(), null, options);
+                fileDescriptor != null ? fileDescriptor.getFileDescriptor() : null, null, options);
     }
 }

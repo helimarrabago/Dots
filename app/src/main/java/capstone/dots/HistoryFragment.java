@@ -63,7 +63,8 @@ public class HistoryFragment extends Fragment {
                 int pos = filename.lastIndexOf(".");
                 if (pos > 0) filename = filename.substring(0, pos);
 
-                if (new File(dir + "Translations", filename + ".txt").exists()) {
+                if (new File(dir + "Translations", filename + ".txt").exists() &&
+                        new File(dir + "Processed Images", filename + ".jpg").exists()) {
                     final int THUMBSIZE = 150;
 
                     Bitmap thumbnail = ThumbnailUtils.extractThumbnail(
@@ -77,7 +78,8 @@ public class HistoryFragment extends Fragment {
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                    SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+                    SimpleDateFormat format = new SimpleDateFormat(
+                            "MMM dd, yyyy hh:mm aaa", Locale.US);
                     String date = format.format(testDate);
 
                     imageItems.add(new ImageItem(filename, thumbnail, date));
@@ -96,7 +98,8 @@ public class HistoryFragment extends Fragment {
     private class CompareItems implements Comparator<ImageItem> {
         @Override
         public int compare(ImageItem imageItem1, ImageItem imageItem2) {
-            SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+            SimpleDateFormat format = new SimpleDateFormat(
+                    "MMM dd, yyyy hh:mm aaa", Locale.US);
             Date date1 = null;
             Date date2 = null;
             try {

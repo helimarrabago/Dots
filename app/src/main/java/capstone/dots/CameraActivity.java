@@ -44,6 +44,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.Surface;
@@ -62,7 +63,6 @@ import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 import com.scanlibrary.ScanUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -75,10 +75,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -126,62 +124,62 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         }
     };
 
-    private String mCameraId;
-    private AutoFitTextureView mTextureView;
-    private CameraCaptureSession mCaptureSession;
-    private CameraDevice mCameraDevice;
-    private Size mPreviewSize;
+    private String cameraID;
+    private AutoFitTextureView textureView;
+    private CameraCaptureSession captureSession;
+    private CameraDevice cameraDevice;
+    private Size previewSize;
 
-    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+    private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice cameraDevice) {
             // This method is called when the camera is opened.  We start camera preview here.
-            mCameraOpenCloseLock.release();
-            mCameraDevice = cameraDevice;
+            cameraOpenCloseLock.release();
+            CameraActivity.this.cameraDevice = cameraDevice;
             createCameraPreviewSession();
         }
 
         @Override
         public void onDisconnected(@NonNull CameraDevice cameraDevice) {
-            mCameraOpenCloseLock.release();
+            cameraOpenCloseLock.release();
             cameraDevice.close();
-            mCameraDevice = null;
+            CameraActivity.this.cameraDevice = null;
         }
 
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int error) {
-            mCameraOpenCloseLock.release();
+            cameraOpenCloseLock.release();
             cameraDevice.close();
-            mCameraDevice = null;
+            CameraActivity.this.cameraDevice = null;
 
             finish();
         }
 
     };
 
-    private HandlerThread mBackgroundThread;
-    private Handler mBackgroundHandler;
-    private ImageReader mImageReader;
-    private File mFile;
+    private HandlerThread backgroundThread;
+    private Handler backgroundHandler;
+    private ImageReader imageReader;
+    private File file;
 
-    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
+    private final ImageReader.OnImageAvailableListener onImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
         @Override
         public void onImageAvailable(ImageReader reader) {
-            mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
+            backgroundHandler.post(new ImageSaver(reader.acquireNextImage(), file));
         }
     };
 
-    private CaptureRequest.Builder mPreviewRequestBuilder;
-    private CaptureRequest mPreviewRequest;
-    private int mState = STATE_PREVIEW;
-    private Semaphore mCameraOpenCloseLock = new Semaphore(1);
-    private int mSensorOrientation;
+    private CaptureRequest.Builder previewRequestBuilder;
+    private CaptureRequest previewRequest;
+    private int state = STATE_PREVIEW;
+    private Semaphore cameraOpenCloseLock = new Semaphore(1);
+    private int sensorOrientation;
 
-    private CameraCaptureSession.CaptureCallback mCaptureCallback
+    private CameraCaptureSession.CaptureCallback captureCallback
             = new CameraCaptureSession.CaptureCallback() {
         private void process(CaptureResult result) {
-            switch (mState) {
+            switch (state) {
                 case STATE_PREVIEW: {
                     // We have nothing to do when the camera preview is working normally.
                     break;
@@ -196,7 +194,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                         Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                         if (aeState == null ||
                                 aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
-                            mState = STATE_PICTURE_TAKEN;
+                            state = STATE_PICTURE_TAKEN;
                             captureStillPicture();
                         } else {
                             runPrecaptureSequence();
@@ -210,7 +208,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                     if (aeState == null ||
                             aeState == CaptureResult.CONTROL_AE_STATE_PRECAPTURE ||
                             aeState == CaptureRequest.CONTROL_AE_STATE_FLASH_REQUIRED) {
-                        mState = STATE_WAITING_NON_PRECAPTURE;
+                        state = STATE_WAITING_NON_PRECAPTURE;
                     }
                     break;
                 }
@@ -218,7 +216,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
-                        mState = STATE_PICTURE_TAKEN;
+                        state = STATE_PICTURE_TAKEN;
                         captureStillPicture();
                     }
                     break;
@@ -278,15 +276,15 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private FrameLayout surface;
     private CameraGuideView guide;
-    private ImageView myImageView;
-    private BallView mBallView;
+    private ImageView imageView;
+    private BallView ballView;
     private Handler redrawHandler;
-    private Timer mTmr;
-    private TimerTask mTsk;
-    private float mBallPosX;
-    private float mBallPosY;
-    private float mBallSpdX;
-    private float mBallSpdY;
+    private Timer timer;
+    private TimerTask task;
+    private float ballPosX;
+    private float ballPosY;
+    private float ballSpeedX;
+    private float ballSpeedY;
     private int rad = 15;
     private int x = 0;
     private int y = 0;
@@ -310,40 +308,40 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         Sensor accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
-        mTextureView = findViewById(R.id.texture);
-        ImageButton mStillImageButton = findViewById(R.id.capture);
+        textureView = findViewById(R.id.texture);
+        ImageButton captureButton = findViewById(R.id.capture);
         surface = findViewById(R.id.surface);
 
-        mStillImageButton.setOnClickListener(onClickCapture());
+        captureButton.setOnClickListener(onClickCapture());
 
         redrawHandler = new Handler();
 
         RelativeLayout mainView = findViewById(R.id.main_view);
-        myImageView = findViewById(R.id.guide);
+        imageView = findViewById(R.id.guide);
 
         Drawable d = ContextCompat.getDrawable(this, R.drawable.im_circle);
         centerXOnImage = d.getIntrinsicWidth() / 2;
         centerYOnImage = d.getIntrinsicHeight() / 2;
 
-        myImageView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener());
+        imageView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener());
 
-        mBallPosX = resX;
-        mBallPosY = resY;
+        ballPosX = resX;
+        ballPosY = resY;
 
-        mBallView = new BallView(this, mBallPosX, mBallPosY, rad);
+        ballView = new BallView(this, ballPosX, ballPosY, rad);
 
-        mainView.addView(mBallView);
-        mBallView.invalidate();
+        mainView.addView(ballView);
+        ballView.invalidate();
     }
 
     private ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener() {
         return new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                myImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                imageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
                 int[] locations = new int[2];
-                myImageView.getLocationOnScreen(locations);
+                imageView.getLocationOnScreen(locations);
                 x = locations[0]; // x location of image on screen
                 y = locations[1]; // y location of image on screen
 
@@ -362,18 +360,19 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                createImageFileName();
+                createTemporaryImageFile();
                 takePicture();
             }
         };
     }
 
+    /* Sends capture image to cropping */
     private void sendImage(Uri uri) {
         Intent intent = new Intent(this, ScanActivity.class);
 
         intent.putExtra(ScanConstants.SCANNED_RESULT, uri);
         intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_CAMERA);
-        System.gc();
+
         startActivityForResult(intent, REQUEST_CODE);
     }
 
@@ -383,41 +382,33 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             Intent intent = new Intent(this, TranslationActivity.class);
             intent.putExtra("Data", data);
+
             startActivity(intent);
         }
     }
 
     private void cropCameraPicture() {
-        Uri mFileUri = FileProvider.getUriForFile(
-                getApplicationContext(), "capstone.dots.provider", mFile);
-        Bitmap mBitmap = getBitmap(mFileUri);
-        Uri uri = postImagePick(mBitmap);
+        Uri uri = FileProvider.getUriForFile(
+                getApplicationContext(), "capstone.dots.provider", file);
+        Bitmap bitmap = getBitmap(uri);
 
-        mFile.delete();
+        boolean success = file.delete();
+        if (!success) Log.e("Error", "Failed to delete captured image (not cropped).");
 
-        Bitmap bitmap = null;
-        try {
-            bitmap = ScanUtils.getBitmap(this, uri);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        SparseArray<PointF> points = guide.getPoints();
+        int h = previewSize.getWidth();
+        int w = previewSize.getHeight();
 
-        mBitmap.recycle();
-
-        HashMap<Integer, PointF> points = guide.getPoints();
-        int h = mPreviewSize.getWidth();
-        int w = mPreviewSize.getHeight();
-
-        new CropAsyncTask(points, h, w).execute(bitmap);
+        new CroppingTask(points, h, w).execute(bitmap);
     }
 
-    private class CropAsyncTask extends AsyncTask<Bitmap, Void, Bitmap> {
-        private Map<Integer, PointF> points;
+    private class CroppingTask extends AsyncTask<Bitmap, Void, Bitmap> {
+        private SparseArray<PointF> points;
         private int h;
         private int w;
         private Uri uri;
 
-        private CropAsyncTask(Map<Integer, PointF> points, int h, int w) {
+        private CroppingTask(SparseArray<PointF> points, int h, int w) {
             this.points = points;
             this.h = h;
             this.w = w;
@@ -451,8 +442,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
 
-            byte[] byteArray = getBitmapAsByteArray(bitmap);
-            createImageFile(byteArray);
+            byte[] byteArray = ScanUtils.getByteArray(bitmap);
+            saveImage(byteArray);
             uri = ScanUtils.getUri(CameraActivity.this, bitmap);
 
             bitmap.recycle();
@@ -461,21 +452,17 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         }
     }
 
-    private byte[] getBitmapAsByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-
-        return stream.toByteArray();
-    }
-
-    private void createImageFile(byte[] byteArray) {
+    private void saveImage(byte[] byteArray) {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         ((Filename) this.getApplication()).setGlobalFilename(timestamp);
 
         try {
             File file = new File(
                     ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
-            if (!file.exists()) file.createNewFile();
+
+            boolean success = false;
+            if (!file.exists()) success = file.createNewFile();
+            if (!success) Log.e("Error", "Failed to save captured image (cropped).");
 
             OutputStream out = new FileOutputStream(file);
             out.write(byteArray);
@@ -496,23 +483,20 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         dialog.show();
     }
 
-    private void createImageFileName() {
+    /* Creates temporary image file for captured image (not cropped) */
+    private void createTemporaryImageFile() {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         ((Filename) this.getApplication()).setGlobalFilename(timestamp);
         try {
-            mFile = new File(
-                    ScanConstants.IMAGE_PATH + File.separator + "Images",timestamp + ".jpg");
-            if (!mFile.exists()) mFile.createNewFile();
+            file = new File(
+                    ScanConstants.IMAGE_PATH + File.separator + "Images", timestamp + ".jpg");
+
+            boolean success = false;
+            if (!file.exists()) success = file.createNewFile();
+            if (!success) Log.e("Error", "Failed to save captured image (cropped).");
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    protected Uri postImagePick(Bitmap bitmap) {
-        Uri uri = ScanUtils.getUri(CameraActivity.this, bitmap);
-        bitmap.recycle();
-
-        return uri;
     }
 
     private Bitmap getBitmap(Uri selectedImg) {
@@ -524,11 +508,9 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        Bitmap original
-                = BitmapFactory.decodeFileDescriptor(
-                fileDescriptor.getFileDescriptor(), null, options);
 
-        return original;
+        return BitmapFactory.decodeFileDescriptor(
+                fileDescriptor != null ? fileDescriptor.getFileDescriptor() : null, null, options);
     }
 
     @Override
@@ -541,34 +523,34 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
         // a camera and start preview from here (otherwise, we wait until the surface is ready in
         // the SurfaceTextureListener).
-        if (mTextureView.isAvailable()) {
-            openCamera(mTextureView.getWidth(), mTextureView.getHeight());
+        if (textureView.isAvailable()) {
+            openCamera(textureView.getWidth(), textureView.getHeight());
         } else {
-            mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
+            textureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
 
         // Create timer to move ball to new position
-        mTmr = new Timer();
-        mTsk = new TimerTask() {
+        timer = new Timer();
+        task = new TimerTask() {
             public void run() {
                 float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20,
                         getResources().getDisplayMetrics());
                 // Move ball based on current speed
-                mBallPosX = (float) (resX + (mBallSpdX * 75 * 0.1)) - rad;
-                mBallPosY = (float) (resY + (mBallSpdY * 75 * 0.1)) - rad - px;
+                ballPosX = (float) (resX + (ballSpeedX * 75 * 0.1)) - rad;
+                ballPosY = (float) (resY + (ballSpeedY * 75 * 0.1)) - rad - px;
 
                 // Update ball class instance
-                mBallView.mX = mBallPosX;
-                mBallView.mY = mBallPosY;
+                ballView.x = ballPosX;
+                ballView.y = ballPosY;
 
                 // Redraw ball, must run in background thread to prevent thread lock
                 redrawHandler.post(new Runnable() {
                     public void run() {
-                        mBallView.invalidate();
+                        ballView.invalidate();
                     }});
             }};
 
-        mTmr.schedule(mTsk, 8, 8);
+        timer.schedule(task, 8, 8);
     }
 
     @Override
@@ -578,9 +560,9 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         closeCamera();
         stopBackgroundThread();
 
-        mTmr.cancel();
-        mTmr = null;
-        mTsk = null;
+        timer.cancel();
+        timer = null;
+        task = null;
     }
 
     private void requestCameraPermission() {
@@ -595,7 +577,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getApplicationContext(),
-                        "Dots will not function without camera services",
+                        "Dots will not function without camera services.",
                         Toast.LENGTH_SHORT).show();
             }
         }
@@ -625,32 +607,32 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 Size largest = Collections.max(
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
-                mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
+                imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                         ImageFormat.JPEG, /*maxImages*/2);
-                mImageReader.setOnImageAvailableListener(
-                        mOnImageAvailableListener, mBackgroundHandler);
+                imageReader.setOnImageAvailableListener(
+                        onImageAvailableListener, backgroundHandler);
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
                 int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
                 //noinspection ConstantConditions
-                mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 boolean swappedDimensions = false;
                 switch (displayRotation) {
                     case Surface.ROTATION_0:
                     case Surface.ROTATION_180:
-                        if (mSensorOrientation == 90 || mSensorOrientation == 270) {
+                        if (sensorOrientation == 90 || sensorOrientation == 270) {
                             swappedDimensions = true;
                         }
                         break;
                     case Surface.ROTATION_90:
                     case Surface.ROTATION_270:
-                        if (mSensorOrientation == 0 || mSensorOrientation == 180) {
+                        if (sensorOrientation == 0 || sensorOrientation == 180) {
                             swappedDimensions = true;
                         }
                         break;
                     default:
-                        Log.e("", "Display rotation is invalid: " + displayRotation);
+                        Log.e("Error", "Display rotation is invalid: " + displayRotation + ".");
                 }
 
                 Point displaySize = new Point();
@@ -678,27 +660,27 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
                 // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
                 // garbage capture data.
-                mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
+                previewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
                         rotatedPreviewWidth, rotatedPreviewHeight, maxPreviewWidth,
                         maxPreviewHeight, largest);
 
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
                 int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    mTextureView.setAspectRatio(
-                            mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                    textureView.setAspectRatio(
+                            previewSize.getWidth(), previewSize.getHeight());
                     guide = new CameraGuideView(
-                            this, mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                            this, previewSize.getHeight(), previewSize.getWidth());
                     surface.addView(guide);
                 } else {
-                    mTextureView.setAspectRatio(
-                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
+                    textureView.setAspectRatio(
+                            previewSize.getHeight(), previewSize.getWidth());
                     guide = new CameraGuideView(
-                            this, mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                            this, previewSize.getWidth(), previewSize.getHeight());
                     surface.addView(guide);
                 }
 
-                mCameraId = cameraId;
+                cameraID = cameraId;
                 return;
             }
         } catch (CameraAccessException e) {
@@ -716,10 +698,10 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         configureTransform(width, height);
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-            if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
+            if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
-            manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+            manager.openCamera(cameraID, stateCallback, backgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -729,38 +711,38 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private void closeCamera() {
         try {
-            mCameraOpenCloseLock.acquire();
-            if (null != mCaptureSession) {
-                mCaptureSession.close();
-                mCaptureSession = null;
+            cameraOpenCloseLock.acquire();
+            if (null != captureSession) {
+                captureSession.close();
+                captureSession = null;
             }
-            if (null != mCameraDevice) {
-                mCameraDevice.close();
-                mCameraDevice = null;
+            if (null != cameraDevice) {
+                cameraDevice.close();
+                cameraDevice = null;
             }
-            if (null != mImageReader) {
-                mImageReader.close();
-                mImageReader = null;
+            if (null != imageReader) {
+                imageReader.close();
+                imageReader = null;
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
         } finally {
-            mCameraOpenCloseLock.release();
+            cameraOpenCloseLock.release();
         }
     }
 
     private void startBackgroundThread() {
-        mBackgroundThread = new HandlerThread("CameraBackground");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+        backgroundThread = new HandlerThread("CameraBackground");
+        backgroundThread.start();
+        backgroundHandler = new Handler(backgroundThread.getLooper());
     }
 
     private void stopBackgroundThread() {
-        mBackgroundThread.quitSafely();
+        backgroundThread.quitSafely();
         try {
-            mBackgroundThread.join();
-            mBackgroundThread = null;
-            mBackgroundHandler = null;
+            backgroundThread.join();
+            backgroundThread = null;
+            backgroundHandler = null;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -768,42 +750,42 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private void createCameraPreviewSession() {
         try {
-            SurfaceTexture texture = mTextureView.getSurfaceTexture();
+            SurfaceTexture texture = textureView.getSurfaceTexture();
             assert texture != null;
 
             // We configure the size of default buffer to be the size of camera preview we want.
-            texture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+            texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
 
             // This is the output Surface we need to start preview.
             Surface surface = new Surface(texture);
 
             // We set up a CaptureRequest.Builder with the output Surface.
-            mPreviewRequestBuilder
-                    = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            mPreviewRequestBuilder.addTarget(surface);
+            previewRequestBuilder
+                    = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            previewRequestBuilder.addTarget(surface);
 
             // Here, we create a CameraCaptureSession for camera preview.
-            mCameraDevice.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface()),
+            cameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()),
                     new CameraCaptureSession.StateCallback() {
 
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                             // The camera is already closed
-                            if (null == mCameraDevice) {
+                            if (null == cameraDevice) {
                                 return;
                             }
 
                             // When the session is ready, we start displaying the preview.
-                            mCaptureSession = cameraCaptureSession;
+                            captureSession = cameraCaptureSession;
                             try {
                                 // Auto focus should be continuous for camera preview.
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                                previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 
                                 // Finally, we start displaying the camera preview.
-                                mPreviewRequest = mPreviewRequestBuilder.build();
-                                mCaptureSession.setRepeatingRequest(mPreviewRequest,
-                                        mCaptureCallback, mBackgroundHandler);
+                                previewRequest = previewRequestBuilder.build();
+                                captureSession.setRepeatingRequest(previewRequest,
+                                        captureCallback, backgroundHandler);
                             } catch (CameraAccessException e) {
                                 e.printStackTrace();
                             }
@@ -821,27 +803,27 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     }
 
     private void configureTransform(int viewWidth, int viewHeight) {
-        if (null == mTextureView || null == mPreviewSize) {
+        if (null == textureView || null == previewSize) {
             return;
         }
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
         Matrix matrix = new Matrix();
         RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
-        RectF bufferRect = new RectF(0, 0, mPreviewSize.getHeight(), mPreviewSize.getWidth());
+        RectF bufferRect = new RectF(0, 0, previewSize.getHeight(), previewSize.getWidth());
         float centerX = viewRect.centerX();
         float centerY = viewRect.centerY();
         if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
             bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY());
             matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
             float scale = Math.max(
-                    (float) viewHeight / mPreviewSize.getHeight(),
-                    (float) viewWidth / mPreviewSize.getWidth());
+                    (float) viewHeight / previewSize.getHeight(),
+                    (float) viewWidth / previewSize.getWidth());
             matrix.postScale(scale, scale, centerX, centerY);
             matrix.postRotate(90 * (rotation - 2), centerX, centerY);
         } else if (Surface.ROTATION_180 == rotation) {
             matrix.postRotate(180, centerX, centerY);
         }
-        mTextureView.setTransform(matrix);
+        textureView.setTransform(matrix);
     }
 
     private void takePicture() {
@@ -851,12 +833,12 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private void lockFocus() {
         try {
             // This is how to tell the camera to lock focus.
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_START);
-            // Tell #mCaptureCallback to wait for the lock.
-            mState = STATE_WAITING_LOCK;
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
-                    mBackgroundHandler);
+            // Tell #captureCallback to wait for the lock.
+            state = STATE_WAITING_LOCK;
+            captureSession.capture(previewRequestBuilder.build(), captureCallback,
+                    backgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -865,12 +847,12 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private void runPrecaptureSequence() {
         try {
             // This is how to tell the camera to trigger.
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
                     CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
-            // Tell #mCaptureCallback to wait for the precapture sequence to be set.
-            mState = STATE_WAITING_PRECAPTURE;
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
-                    mBackgroundHandler);
+            // Tell #captureCallback to wait for the precapture sequence to be set.
+            state = STATE_WAITING_PRECAPTURE;
+            captureSession.capture(previewRequestBuilder.build(), captureCallback,
+                    backgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -878,13 +860,13 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     private void captureStillPicture() {
         try {
-            if (null == mCameraDevice) {
+            if (null == cameraDevice) {
                 return;
             }
             // This is the CaptureRequest.Builder that we use to take a picture.
             final CaptureRequest.Builder captureBuilder =
-                    mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureBuilder.addTarget(mImageReader.getSurface());
+                    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            captureBuilder.addTarget(imageReader.getSurface());
 
             // Use the same AE and AF modes as the preview.
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
@@ -901,13 +883,13 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
-                    Log.d("", mFile.toString());
+                    Log.d("", file.toString());
                     unlockFocus();
                 }
             };
 
-            mCaptureSession.stopRepeating();
-            mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
+            captureSession.stopRepeating();
+            captureSession.capture(captureBuilder.build(), CaptureCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -918,56 +900,50 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         // We have to take that into account and rotate JPEG properly.
         // For devices with orientation of 90, we simply return our mapping from ORIENTATIONS.
         // For devices with orientation of 270, we need to rotate the JPEG 180 degrees.
-        return (ORIENTATIONS.get(rotation) + mSensorOrientation + 270) % 360;
+        return (ORIENTATIONS.get(rotation) + sensorOrientation + 270) % 360;
     }
 
     private void unlockFocus() {
         try {
             // Reset the auto-focus trigger
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
-                    mBackgroundHandler);
+            captureSession.capture(previewRequestBuilder.build(), captureCallback,
+                    backgroundHandler);
             // After this, the camera will go back to the normal state of preview.
-            mState = STATE_PREVIEW;
-            mCaptureSession.setRepeatingRequest(mPreviewRequest, mCaptureCallback,
-                    mBackgroundHandler);
+            state = STATE_PREVIEW;
+            captureSession.setRepeatingRequest(previewRequest, captureCallback,
+                    backgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
 
     private class ImageSaver implements Runnable {
-        /**
-         * The JPEG image
-         */
-        private final Image mImage;
-        /**
-         * The file we save the image into.
-         */
-        private final File mFile;
+        private final Image image;
+        private final File file;
 
-        public ImageSaver(Image image, File file) {
-            mImage = image;
-            mFile = file;
+        ImageSaver(Image image, File file) {
+            this.image = image;
+            this.file = file;
         }
 
         @Override
         public void run() {
-            ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
+            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             FileOutputStream output = null;
             try {
-                output = new FileOutputStream(mFile);
+                output = new FileOutputStream(file);
                 output.write(bytes);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                mImage.close();
+                image.close();
 
                 Intent mediaStoreUpdateIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                mediaStoreUpdateIntent.setData(Uri.fromFile(mFile));
+                mediaStoreUpdateIntent.setData(Uri.fromFile(file));
                 sendBroadcast(mediaStoreUpdateIntent);
 
                 if (null != output) {
@@ -995,8 +971,8 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        mBallSpdX = sensorEvent.values[0];
-        mBallSpdY = -sensorEvent.values[1];
+        ballSpeedX = sensorEvent.values[0];
+        ballSpeedY = -sensorEvent.values[1];
     }
 
     @Override

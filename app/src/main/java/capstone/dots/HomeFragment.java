@@ -18,7 +18,6 @@ import com.scanlibrary.ScanConstants;
 
 public class HomeFragment extends Fragment {
     private View view;
-
     private static final int REQUEST_CODE = 99;
 
     @Override
@@ -26,6 +25,7 @@ public class HomeFragment extends Fragment {
                              ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_home, container, false);
+
         init();
 
         return view;
@@ -46,6 +46,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onComplete(RippleView rippleView) {
                 Intent intent = new Intent(getActivity(), CameraActivity.class);
+
                 startActivity(intent);
             }
         };
@@ -58,6 +59,7 @@ public class HomeFragment extends Fragment {
             public void onComplete(RippleView rippleView) {
                 Intent intent = new Intent(getActivity(), ScanActivity.class);
                 intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_MEDIA);
+
                 startActivityForResult(intent, REQUEST_CODE);
             }
         };
@@ -69,6 +71,7 @@ public class HomeFragment extends Fragment {
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             Intent intent = new Intent(getActivity(), TranslationActivity.class);
             intent.putExtra("Data", data);
+
             startActivity(intent);
         }
     }

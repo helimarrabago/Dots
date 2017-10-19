@@ -7,30 +7,59 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
-        <View
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/bar_height"
             android:gravity="center_vertical"
-            android:background="@color/colorPrimary"/>
+            android:background="@color/colorPrimary">
+            <ImageButton
+                android:id="@+id/switch_button"
+                android:layout_width="@dimen/button_hw"
+                android:layout_height="@dimen/button_hw"
+                android:layout_alignParentEnd="true"
+                android:padding="@dimen/button_padding"
+                android:background="?selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:src="@mipmap/ic_image"/>
+        </RelativeLayout>
     </android.support.design.widget.AppBarLayout>
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/bar_top"
-        android:layout_above="@+id/bar_bottom"
-        android:background="@android:color/white">
-        <HorizontalScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/output"
+        android:layout_above="@+id/bar_bottom">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white">
+            <HorizontalScrollView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/output_padding"
-                android:textSize="@dimen/output_size"
-                android:background="@android:color/transparent"/>
-        </HorizontalScrollView>
-    </ScrollView>
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/output"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/output_padding"
+                    android:textSize="@dimen/output_size"
+                    android:background="@android:color/transparent"/>
+            </HorizontalScrollView>
+        </ScrollView>
+        <FrameLayout
+            android:id="@+id/source_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:padding="@dimen/frame_padding"
+            android:background="@android:color/black"
+            android:visibility="invisible">
+            <ImageView
+                android:id="@+id/image_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:adjustViewBounds="true"/>
+        </FrameLayout>
+    </FrameLayout>
     <android.support.design.widget.AppBarLayout
         android:id="@+id/bar_bottom"
         android:layout_width="match_parent"

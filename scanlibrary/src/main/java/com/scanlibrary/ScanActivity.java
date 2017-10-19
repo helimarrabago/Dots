@@ -6,6 +6,7 @@ import android.content.ComponentCallbacks2;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -33,7 +34,9 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
         String filename = ((Filename) this.getApplication()).getGlobalFilename();
         File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
                 filename + ".jpg");
-        file.delete();
+
+        boolean success = file.delete();
+        if (!success) Log.e("Error", "Failed to delete currently opened image.");
 
         finish();
     }

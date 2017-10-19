@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -31,7 +32,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,7 +122,8 @@ public class ProcessingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 SparseArray<PointF> points = polygonView.getPoints();
-                if (isScanPointsValid(points)) new CroppingTask(points).execute();
+                if (isScanPointsValid(points)) new CroppingTask(points,
+                        sourceImageView.getHeight(), sourceImageView.getWidth()).execute();
                 else showErrorDialog(getResources().getString(R.string.crop_error));
             }
         };
@@ -250,27 +254,15 @@ public class ProcessingFragment extends Fragment {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
-    private Bitmap getScannedBitmap(Bitmap original, SparseArray<PointF> points) {
-        float xRatio = (float) original.getWidth() / sourceImageView.getWidth();
-        float yRatio = (float) original.getHeight() / sourceImageView.getHeight();
-
-        float x1 = (points.get(0).x) * xRatio;
-        float x2 = (points.get(1).x) * xRatio;
-        float x3 = (points.get(2).x) * xRatio;
-        float x4 = (points.get(3).x) * xRatio;
-        float y1 = (points.get(0).y) * yRatio;
-        float y2 = (points.get(1).y) * yRatio;
-        float y3 = (points.get(2).y) * yRatio;
-        float y4 = (points.get(3).y) * yRatio;
-
-        return ScanActivity.getScannedBitmap(original, x1, y1, x2, y2, x3, y3, x4, y4);
-    }
-
     private class CroppingTask extends AsyncTask<Void, Void, Bitmap> {
         private SparseArray<PointF> points;
+        private int h;
+        private int w;
 
-        private CroppingTask(SparseArray<PointF> points) {
+        private CroppingTask(SparseArray<PointF> points, int h, int w) {
             this.points = points;
+            this.h = h;
+            this.w = w;
         }
 
         @Override
@@ -282,7 +274,19 @@ public class ProcessingFragment extends Fragment {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            return getScannedBitmap(original, points);
+            float xRatio = (float) original.getWidth() / w;
+            float yRatio = (float) original.getHeight() / h;
+
+            float x1 = (points.get(0).x) * xRatio;
+            float x2 = (points.get(1).x) * xRatio;
+            float x3 = (points.get(2).x) * xRatio;
+            float x4 = (points.get(3).x) * xRatio;
+            float y1 = (points.get(0).y) * yRatio;
+            float y2 = (points.get(1).y) * yRatio;
+            float y3 = (points.get(2).y) * yRatio;
+            float y4 = (points.get(3).y) * yRatio;
+
+            return ScanActivity.getScannedBitmap(original, x1, y1, x2, y2, x3, y3, x4, y4);
         }
 
         @Override
@@ -368,6 +372,11 @@ public class ProcessingFragment extends Fragment {
             super.onPostExecute(result);
 
             if (result) {
+                Bitmap bitmap = Bitmap.createBitmap(
+                        mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+                Utils.matToBitmap(mat, bitmap);
+                saveImage(ScanUtils.getByteArray(bitmap));
+
                 mat.release();
                 dialog.dismiss();
 
@@ -384,6 +393,22 @@ public class ProcessingFragment extends Fragment {
                 polygonView.invalidate();
                 showErrorDialog(getResources().getString(R.string.processing_error));
             }
+        }
+    }
+
+    private void saveImage(byte[] byteArray) {
+        try {
+            File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Processed Images",
+                    filename + ".jpg");
+
+            boolean success = file.createNewFile();
+            if (!success) Log.e("Error", "Failed to save processed image.");
+
+            OutputStream out = new FileOutputStream(file);
+            out.write(byteArray);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -435,7 +460,7 @@ public class ProcessingFragment extends Fragment {
         dialog.show();
     }
 
-    /* Deletes document currently opened */
+    /* Deletes image currently opened */
     private MaterialDialog.SingleButtonCallback onClickYes() {
         return new MaterialDialog.SingleButtonCallback() {
             @Override
@@ -443,7 +468,10 @@ public class ProcessingFragment extends Fragment {
                                 @NonNull DialogAction dialogAction) {
                 File file = new File(ScanConstants.IMAGE_PATH + File.separator + "Images",
                         filename + ".jpg");
-                file.delete();
+
+                boolean success = file.delete();
+                if (!success) Log.e("Error", "Failed to delete image currently opened.");
+
                 getActivity().finish();
             }
         };
