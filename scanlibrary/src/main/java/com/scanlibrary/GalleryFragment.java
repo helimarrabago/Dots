@@ -23,7 +23,7 @@ import java.util.Locale;
  * Created by jhansi on 04/04/15.
  */
 
-public class PickImageFragment extends Fragment {
+public class GalleryFragment extends Fragment {
     private IScanner scanner;
 
     @Override
@@ -107,7 +107,7 @@ public class PickImageFragment extends Fragment {
     }
 
     protected void postImagePick(Bitmap bitmap) {
-        Uri uri = Utils.getUri(getActivity(), bitmap);
+        Uri uri = ScanUtils.getUri(getActivity(), bitmap);
         bitmap.recycle();
 
         scanner.onBitmapSelect(uri);

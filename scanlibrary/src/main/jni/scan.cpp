@@ -131,10 +131,15 @@ Mat scan(Mat img, jfloat x1, jfloat y1, jfloat x2, jfloat y2, jfloat x3, jfloat 
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "Scaning scan() %f",x1);
     // define the destination image size:
     
-    float w1 = sqrt( pow(x4 - x3 , 2) + pow(x4 - x3, 2));
+    /*float w1 = sqrt( pow(x4 - x3 , 2) + pow(x4 - x3, 2));
     float w2 = sqrt( pow(x2 - x1 , 2) + pow(x2-x1, 2));
     float h1 = sqrt( pow(y2 - y4 , 2) + pow(y2 - y4, 2));
-    float h2 = sqrt( pow(y1 - y3 , 2) + pow(y1-y3, 2));
+    float h2 = sqrt( pow(y1 - y3 , 2) + pow(y1-y3, 2));*/
+
+    float w1 = abs(x4 - x3);
+    float w2 = abs(x2 - x1);
+    float h1 = abs(y2 - y4);
+    float h2 = abs(y1 - y3);
     
     float maxWidth = (w1 < w2) ? w1 : w2;
     float maxHeight = (h1 < h2) ? h1 : h2;

@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * Created by jhansi on 05/04/15.
  */
-public class Utils {
+public class ScanUtils {
     public static Uri getUri(Context context, Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);

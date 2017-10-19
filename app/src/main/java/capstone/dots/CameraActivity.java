@@ -60,7 +60,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.scanlibrary.Filename;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
-import com.scanlibrary.Utils;
+import com.scanlibrary.ScanUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -381,7 +381,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Intent intent = new Intent(this, TranslateActivity.class);
+            Intent intent = new Intent(this, TranslationActivity.class);
             intent.putExtra("Data", data);
             startActivity(intent);
         }
@@ -397,7 +397,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
         Bitmap bitmap = null;
         try {
-            bitmap = Utils.getBitmap(this, uri);
+            bitmap = ScanUtils.getBitmap(this, uri);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -453,7 +453,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
 
             byte[] byteArray = getBitmapAsByteArray(bitmap);
             createImageFile(byteArray);
-            uri = Utils.getUri(CameraActivity.this, bitmap);
+            uri = ScanUtils.getUri(CameraActivity.this, bitmap);
 
             bitmap.recycle();
             dialog.dismiss();
@@ -509,7 +509,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     }
 
     protected Uri postImagePick(Bitmap bitmap) {
-        Uri uri = Utils.getUri(CameraActivity.this, bitmap);
+        Uri uri = ScanUtils.getUri(CameraActivity.this, bitmap);
         bitmap.recycle();
 
         return uri;

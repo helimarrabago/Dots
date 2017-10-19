@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jhansi on 28/03/15.
@@ -53,6 +52,10 @@ public class PolygonView extends FrameLayout {
         this.context = context;
 
         init();
+    }
+
+    public void changeColor(int color) {
+        paint.setColor(color);
     }
 
     private void init() {
@@ -99,8 +102,8 @@ public class PolygonView extends FrameLayout {
         paint.setAntiAlias(true);
     }
 
-    public Map<Integer, PointF> getPoints() {
-        List<PointF> points = new ArrayList<PointF>();
+    public SparseArray<PointF> getPoints() {
+        List<PointF> points = new ArrayList<>();
         points.add(new PointF(pointer1.getX(), pointer1.getY()));
         points.add(new PointF(pointer2.getX(), pointer2.getY()));
         points.add(new PointF(pointer3.getX(), pointer3.getY()));
@@ -109,7 +112,7 @@ public class PolygonView extends FrameLayout {
         return getOrderedPoints(points);
     }
 
-    public Map<Integer, PointF> getOrderedPoints(List<PointF> points) {
+    public SparseArray<PointF> getOrderedPoints(List<PointF> points) {
         PointF centerPoint = new PointF();
 
         int size = points.size();
@@ -118,7 +121,7 @@ public class PolygonView extends FrameLayout {
             centerPoint.y += pointF.y / size;
         }
 
-        Map<Integer, PointF> orderedPoints = new HashMap<>();
+        SparseArray<PointF> orderedPoints = new SparseArray<>();
         for (PointF pointF : points) {
             int index = -1;
 
@@ -133,11 +136,11 @@ public class PolygonView extends FrameLayout {
         return orderedPoints;
     }
 
-    public void setPoints(Map<Integer, PointF> pointFMap) {
+    public void setPoints(SparseArray<PointF> pointFMap) {
         if (pointFMap.size() == 4) setPointsCoordinates(pointFMap);
     }
 
-    private void setPointsCoordinates(Map<Integer, PointF> pointFMap) {
+    private void setPointsCoordinates(SparseArray<PointF> pointFMap) {
         pointer1.setX(pointFMap.get(0).x);
         pointer1.setY(pointFMap.get(0).y);
 
@@ -202,7 +205,7 @@ public class PolygonView extends FrameLayout {
         private ImageView mainPointer1;
         private ImageView mainPointer2;
 
-        public MidPointTouchListenerImpl(ImageView mainPointer1, ImageView mainPointer2) {
+        MidPointTouchListenerImpl(ImageView mainPointer1, ImageView mainPointer2) {
             this.mainPointer1 = mainPointer1;
             this.mainPointer2 = mainPointer2;
         }
@@ -251,10 +254,9 @@ public class PolygonView extends FrameLayout {
 
                     break;
                 case MotionEvent.ACTION_UP:
-                    int color = 0;
-                    if (isValidShape(getPoints()))
-                        color = ContextCompat.getColor(context, R.color.blue);
-                    else color = ContextCompat.getColor(context, R.color.red);
+                    int color = ContextCompat.getColor(context, R.color.blue);
+                    if (!isValidShape(getPoints()))
+                        color = ContextCompat.getColor(context, R.color.red);
                     paint.setColor(color);
 
                     break;
@@ -272,7 +274,7 @@ public class PolygonView extends FrameLayout {
         return super.onTouchEvent(event);
     }
 
-    public boolean isValidShape(Map<Integer, PointF> pointFMap) {
+    public boolean isValidShape(SparseArray<PointF> pointFMap) {
         return pointFMap.size() == 4;
     }
 
@@ -302,10 +304,9 @@ public class PolygonView extends FrameLayout {
 
                     break;
                 case MotionEvent.ACTION_UP:
-                    int color = 0;
-                    if (isValidShape(getPoints()))
-                        color = ContextCompat.getColor(context, R.color.blue);
-                    else color = ContextCompat.getColor(context, R.color.red);
+                    int color = ContextCompat.getColor(context, R.color.blue);
+                    if (!isValidShape(getPoints()))
+                        color = ContextCompat.getColor(context, R.color.red);
                     paint.setColor(color);
 
                     break;

@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
+import android.util.SparseArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,24 +25,27 @@ import android.widget.ImageView;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by jhansi on 29/03/15.
  */
-public class ScanFragment extends Fragment {
+public class ProcessingFragment extends Fragment {
     private ImageView sourceImageView;
     private FrameLayout sourceFrame;
     private PolygonView polygonView;
     private View view;
-    private MaterialDialog dialog;
     private Bitmap original;
     private String filename;
+    private MaterialDialog dialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -54,14 +59,25 @@ public class ScanFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
+
         if (dialog != null) {
             dialog.dismiss();
             dialog = null;
         }
 
+        if (original != null) {
+            original.recycle();
+            original = null;
+        }
+
+        if (sourceImageView != null) {
+            sourceImageView.setImageBitmap(null);
+            sourceImageView = null;
+        }
+
         System.gc();
 
-        super.onDestroy();
     }
 
     private void init() {
@@ -102,9 +118,9 @@ public class ScanFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Map<Integer, PointF> points = polygonView.getPoints();
-                if (isScanPointsValid(points)) new ScanAsyncTask(points).execute();
-                else showErrorDialog();
+                SparseArray<PointF> points = polygonView.getPoints();
+                if (isScanPointsValid(points)) new CroppingTask(points).execute();
+                else showErrorDialog(getResources().getString(R.string.crop_error));
             }
         };
     }
@@ -135,7 +151,7 @@ public class ScanFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Bitmap tempBitmap = ((BitmapDrawable) sourceImageView.getDrawable()).getBitmap();
-                Map<Integer, PointF> pointFs = getOutlinePoints(tempBitmap);
+                SparseArray<PointF> pointFs = getOutlinePoints(tempBitmap);
                 polygonView.setPoints(pointFs);
                 polygonView.setVisibility(View.VISIBLE);
                 int padding = (int) getResources().getDimension(R.dimen.scan_padding);
@@ -150,7 +166,7 @@ public class ScanFragment extends Fragment {
     private Bitmap getBitmap() {
         Uri uri = getUri();
         try {
-            Bitmap bitmap = Utils.getBitmap(getActivity(), uri);
+            Bitmap bitmap = ScanUtils.getBitmap(getActivity(), uri);
             getActivity().getContentResolver().delete(uri, null, null);
 
             return bitmap;
@@ -168,7 +184,7 @@ public class ScanFragment extends Fragment {
                 original, sourceFrame.getWidth(), sourceFrame.getHeight());
         sourceImageView.setImageBitmap(scaledBitmap);
         Bitmap tempBitmap = ((BitmapDrawable) sourceImageView.getDrawable()).getBitmap();
-        Map<Integer, PointF> pointFs = getEdgePoints(tempBitmap);
+        SparseArray<PointF> pointFs = getEdgePoints(tempBitmap);
         polygonView.setPoints(pointFs);
         polygonView.setVisibility(View.VISIBLE);
         int padding = (int) getResources().getDimension(R.dimen.scan_padding);
@@ -178,11 +194,10 @@ public class ScanFragment extends Fragment {
         polygonView.setLayoutParams(layoutParams);
     }
 
-    private Map<Integer, PointF> getEdgePoints(Bitmap tempBitmap) {
+    private SparseArray<PointF> getEdgePoints(Bitmap tempBitmap) {
         List<PointF> pointFs = getContourEdgePoints(tempBitmap);
-        Map<Integer, PointF> orderedPoints = orderedValidEdgePoints(tempBitmap, pointFs);
 
-        return orderedPoints;
+        return orderedValidEdgePoints(tempBitmap, pointFs);
     }
 
     private List<PointF> getContourEdgePoints(Bitmap tempBitmap) {
@@ -206,8 +221,8 @@ public class ScanFragment extends Fragment {
         return pointFs;
     }
 
-    private Map<Integer, PointF> getOutlinePoints(Bitmap tempBitmap) {
-        Map<Integer, PointF> outlinePoints = new HashMap<>();
+    private SparseArray<PointF> getOutlinePoints(Bitmap tempBitmap) {
+        SparseArray<PointF> outlinePoints = new SparseArray<>();
         outlinePoints.put(0, new PointF(0, 0));
         outlinePoints.put(1, new PointF(tempBitmap.getWidth(), 0));
         outlinePoints.put(2, new PointF(0, tempBitmap.getHeight()));
@@ -216,8 +231,8 @@ public class ScanFragment extends Fragment {
         return outlinePoints;
     }
 
-    private Map<Integer, PointF> orderedValidEdgePoints(Bitmap tempBitmap, List<PointF> pointFs) {
-        Map<Integer, PointF> orderedPoints = polygonView.getOrderedPoints(pointFs);
+    private SparseArray<PointF> orderedValidEdgePoints(Bitmap tempBitmap, List<PointF> pointFs) {
+        SparseArray<PointF> orderedPoints = polygonView.getOrderedPoints(pointFs);
         if (!polygonView.isValidShape(orderedPoints)) {
             orderedPoints = getOutlinePoints(tempBitmap);
         }
@@ -225,7 +240,7 @@ public class ScanFragment extends Fragment {
         return orderedPoints;
     }
 
-    private boolean isScanPointsValid(Map<Integer, PointF> points) { return points.size() == 4; }
+    private boolean isScanPointsValid(SparseArray<PointF> points) { return points.size() == 4; }
 
     private Bitmap scaledBitmap(Bitmap bitmap, int width, int height) {
         Matrix m = new Matrix();
@@ -235,7 +250,7 @@ public class ScanFragment extends Fragment {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
     }
 
-    private Bitmap getScannedBitmap(Bitmap original, Map<Integer, PointF> points) {
+    private Bitmap getScannedBitmap(Bitmap original, SparseArray<PointF> points) {
         float xRatio = (float) original.getWidth() / sourceImageView.getWidth();
         float yRatio = (float) original.getHeight() / sourceImageView.getHeight();
 
@@ -248,15 +263,13 @@ public class ScanFragment extends Fragment {
         float y3 = (points.get(2).y) * yRatio;
         float y4 = (points.get(3).y) * yRatio;
 
-        return ((ScanActivity) getActivity()).getScannedBitmap(
-                original, x1, y1, x2, y2, x3, y3, x4, y4);
+        return ScanActivity.getScannedBitmap(original, x1, y1, x2, y2, x3, y3, x4, y4);
     }
 
-    private class ScanAsyncTask extends AsyncTask<Void, Void, Bitmap> {
-        private Map<Integer, PointF> points;
-        private Uri uri;
+    private class CroppingTask extends AsyncTask<Void, Void, Bitmap> {
+        private SparseArray<PointF> points;
 
-        private ScanAsyncTask(Map<Integer, PointF> points) {
+        private CroppingTask(SparseArray<PointF> points) {
             this.points = points;
         }
 
@@ -269,31 +282,109 @@ public class ScanFragment extends Fragment {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            Bitmap bitmap = getScannedBitmap(original, points);
-            uri = Utils.getUri(getActivity(), bitmap);
-
-            return bitmap;
+            return getScannedBitmap(original, points);
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
 
-            bitmap.recycle();
             dialog.dismiss();
-            onScanFinish(uri);
+            onCroppingFinish(bitmap);
         }
     }
 
-    private void onScanFinish(Uri uri) {
-        Intent data = new Intent();
-        data.putExtra(ScanConstants.SCANNED_RESULT, uri);
-        getActivity().setResult(Activity.RESULT_OK, data);
-        original.recycle();
+    private void onCroppingFinish(Bitmap bitmap) {
+        Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8U);
+        Utils.bitmapToMat(bitmap, mat);
+        Processing.getBitmapAsByteArray(mat, "cropping");
 
-        System.gc();
+        new ProcessingTask().execute(bitmap);
+    }
 
-        getActivity().finish();
+    /* AyncTask to handle heavy processing */
+    private class ProcessingTask extends AsyncTask<Bitmap, String, Boolean> {
+        private Mat mat;
+        private Bitmap processed;
+        private Uri uri;
+        private ArrayList<Integer> finalHLines;
+        private ArrayList<Integer> finalVLines;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            showProgressDialog(getResources().getString(R.string.processing));
+        }
+
+        @Override
+        protected Boolean doInBackground(Bitmap... params) {
+            // Convert bitmap to mat
+            mat = new Mat(params[0].getWidth(), params[0].getHeight(), CvType.CV_8U);
+            Utils.bitmapToMat(params[0], mat);
+
+            // Preprocessing
+            try {
+                mat = Processing.grayToBW(mat);
+                mat = Processing.removeNoise(mat);
+                mat = Processing.correctSkew(mat);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            processed = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(mat, processed);
+            uri = ScanUtils.getUri(getActivity(), processed);
+
+            // Dot detection
+            try {
+                ArrayList<Point> centroids = Processing.getCentroids(mat);
+                Processing.sortCentroidsByY(centroids);
+                ArrayList<Integer> hLines = Processing.createHLines(centroids);
+                finalHLines = Processing.removeDenseHLines(hLines);
+                Processing.sortCentroidsByX(centroids);
+                ArrayList<Integer> vLines = Processing.createVLines(centroids);
+                ArrayList<Integer> refinedVLines = Processing.removeDenseVLines(vLines);
+                finalVLines = Processing.fillMissingVLines(refinedVLines);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            System.out.println(finalHLines.size() + " " + finalVLines.size());
+
+            if (finalHLines.size() % 3 != 0 || finalVLines.size() % 2 != 0)
+                return false;
+
+            // Cell recognition
+            Processing.createBoxes(mat, finalHLines, finalVLines);
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            if (result) {
+                mat.release();
+                dialog.dismiss();
+
+                Intent data = new Intent();
+                data.putExtra(ScanConstants.SCANNED_RESULT, uri);
+                data.putIntegerArrayListExtra("finalHLines", finalHLines);
+                data.putIntegerArrayListExtra("finalVLines", finalVLines);
+                getActivity().setResult(Activity.RESULT_OK, data);
+
+                getActivity().finish();
+            } else {
+                dialog.dismiss();
+                polygonView.changeColor(ContextCompat.getColor(getActivity(), R.color.red));
+                polygonView.invalidate();
+                showErrorDialog(getResources().getString(R.string.processing_error));
+            }
+        }
     }
 
     /* Displays progress dialog */
@@ -308,9 +399,9 @@ public class ScanFragment extends Fragment {
     }
 
     /* Displays error dialog */
-    private void showErrorDialog() {
+    private void showErrorDialog(String message) {
         MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
-                .content(R.string.crop_error)
+                .content(message)
                 .positiveText(R.string.okay)
                 .cancelable(false)
                 .onPositive(onClickOkay());

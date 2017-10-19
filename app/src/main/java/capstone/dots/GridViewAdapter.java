@@ -15,13 +15,14 @@ import java.util.ArrayList;
  * Created by lenovo on 9/24/2017.
  */
 
-public class GridViewAdapter extends ArrayAdapter {
+class GridViewAdapter extends ArrayAdapter {
     private Context context;
     private int layoutResourceId;
-    private ArrayList data = new ArrayList();
+    private ArrayList<ImageItem> data = new ArrayList<>();
 
-    public GridViewAdapter(Context context, int layoutResourceId, ArrayList data) {
+    GridViewAdapter(Context context, int layoutResourceId, ArrayList<ImageItem> data) {
         super(context, layoutResourceId, data);
+
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
@@ -39,16 +40,16 @@ public class GridViewAdapter extends ArrayAdapter {
             holder.date = row.findViewById(R.id.date);
             holder.thumbnail = row.findViewById(R.id.thumbnail);
             row.setTag(holder);
-        } else holder  = (ViewHolder) row.getTag();
+        } else holder = (ViewHolder) row.getTag();
 
-        ImageItem item = (ImageItem) data.get(position);
+        ImageItem item = data.get(position);
         holder.date.setText(item.getDate());
         holder.thumbnail.setImageBitmap(item.getThumbnail());
 
         return row;
     }
 
-    static class ViewHolder {
+    private static class ViewHolder {
         TextView date;
         ImageView thumbnail;
     }

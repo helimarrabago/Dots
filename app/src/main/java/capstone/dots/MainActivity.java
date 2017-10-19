@@ -16,28 +16,11 @@ import com.scanlibrary.ScanConstants;
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    private ViewPager mViewPager;
-
-    private ImageButton helpButton;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        setContentView(R.layout.activity_main);
         init();
     }
 
@@ -49,10 +32,9 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
+        ViewPager mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         Intent intent = getIntent();
@@ -61,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             mViewPager.setCurrentItem(fragment);
         }
 
-        helpButton = findViewById(R.id.help_button);
+        ImageButton helpButton = findViewById(R.id.help_button);
         helpButton.setOnClickListener(onClickHelp());
 
         TabLayout tabLayout = findViewById(R.id.tabs);
@@ -116,11 +98,9 @@ public class MainActivity extends AppCompatActivity {
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position) {
                 case 0:
-                    HomeFragment homeFragment = new HomeFragment();
-                    return homeFragment;
+                    return new HomeFragment();
                 case 1:
-                    HistoryFragment historyFragment = new HistoryFragment();
-                    return historyFragment;
+                    return new HistoryFragment();
             }
             return null;
         }

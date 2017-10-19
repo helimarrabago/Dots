@@ -2,12 +2,15 @@
 <resources>
     <string name="app_name">ScanLibrary</string>
     <string name="cropping">Cropping image…</string>
-    <string name="crop_error">Cannot crop the image, change the points :-(</string>
+    <string name="crop_error">Cannot crop the image, try changing the points.</string>
     <string name="okay">Okay</string>
     <string name="low_memory">Your phone is low on memory,
-        you may feel some lags while editing images :-(</string>
+        you may feel some lags while editing images.</string>
     <string name="crop_caption">Select area to crop</string>
     <string name="confirm_cancel">Are you sure you want to discard image?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="processing">Processing image…</string>
+    <string name="processing_error">An error occurred during processing, try changing
+        the points.</string>
 </resources>
